@@ -3,16 +3,19 @@ defmodule CanonD do
   Documentation for `CanonD`.
   """
 
-  @doc """
-  Hello world.
+  def main() do
+    priv_dir = :code.priv_dir(:canon_d)
+    path = Path.join([priv_dir, "decks", "erlang-lib.md"])
+    {:ok, deck} = File.read(path)
+    learn_deck(deck)
+  end
 
-  ## Examples
-
-      iex> CanonD.hello()
-      :world
-
-  """
-  def hello do
-    :world
+  @spec learn_deck(String.t()) :: :ok
+  def learn_deck(deck) do
+    IO.puts(deck)
+    # TODO: 
+    # - parse cards
+    # - learn card
+    :ok
   end
 end
