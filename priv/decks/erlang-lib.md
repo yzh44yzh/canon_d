@@ -24,6 +24,7 @@ Thing = atom() | integer() | float() | string()
 ```
 
 ### lists:enumerate/1,2
+```
 enumerate(List1) -> List2
 
 > lists:enumerate([a,b,c]).
