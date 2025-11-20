@@ -2,7 +2,6 @@ defmodule CanonD.Parser do
 
   alias CanonD.Model.{Card, Deck}
 
-  # TODO test
   @spec parse(Path.t()) :: Deck.t()
   def parse(path) do
     {:ok, data} = File.read(path)
@@ -12,7 +11,6 @@ defmodule CanonD.Parser do
     %Deck{deck | cards: cards}
   end
 
-  # TODO test
   @spec parse_data(String.t()) :: [Card.t()]
   def parse_data(data) do
     data
@@ -24,7 +22,6 @@ defmodule CanonD.Parser do
     |> Enum.map(&make_card/1)
   end
   
-  # TODO test
   @spec group_lines_by_header([String.t()]) :: [[String.t()]]
   def group_lines_by_header([]), do: []
   def group_lines_by_header([first_line | lines]) do
