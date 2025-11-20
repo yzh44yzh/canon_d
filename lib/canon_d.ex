@@ -3,7 +3,7 @@ defmodule CanonD do
   Documentation for `CanonD`.
   """
   alias CanonD.Parser
-  alias CanonD.Deck
+  alias CanonD.Model.Deck
 
   def main() do
     priv_dir = :code.priv_dir(:canon_d)

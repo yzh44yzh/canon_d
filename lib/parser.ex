@@ -1,7 +1,6 @@
 defmodule CanonD.Parser do
 
-  alias CanonD.Card
-  alias CanonD.Deck
+  alias CanonD.Model.{Card, Deck}
 
   # TODO test
   @spec parse(Path.t()) :: Deck.t()
@@ -42,7 +41,6 @@ defmodule CanonD.Parser do
     |> then(fn {groups, last_group} -> groups ++ [last_group] end)
   end
 
-  # TODO test
   @spec make_card([String.t()]) :: Card.t()
   def make_card([header | lines]) do
     header = header |> String.trim("#") |> String.trim()
