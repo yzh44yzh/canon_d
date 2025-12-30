@@ -29,20 +29,18 @@ defmodule CanonD.Model do
     alias CanonD.Model.Card
 
     @type t() :: %__MODULE__{
+      total_cards: non_neg_integer(),
       correct_answers: non_neg_integer(),
       incorrect_answers: non_neg_integer(),
       incorrect_cards: [Card.t()]
     }
 
-    @enforce_keys [:correct_answers, :incorrect_answers, :incorrect_cards]
-    defstruct [:correct_answers, :incorrect_answers, :incorrect_cards]
-
-    def new() do
-      %__MODULE__{
-        correct_answers: 0,
-        incorrect_answers: 0,
-        incorrect_cards: []
-      }
-    end
+    @enforce_keys [:total_cards]
+    defstruct [
+      :total_cards, 
+      {:correct_answers, 0}, 
+      {:incorrect_answers, 0},
+      {:incorrect_cards, []}
+    ]
   end
 end
