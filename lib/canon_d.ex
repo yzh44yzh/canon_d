@@ -2,11 +2,12 @@ defmodule CanonD do
   alias CanonD.Parser
   alias CanonD.Model.{Deck, Card, LearnState}
 
-  def main() do
-    priv_dir = :code.priv_dir(:canon_d)
+  def main(args) do
+    # TODO handle invalid args
+    IO.puts("args #{inspect(args)}")
+    [deck_file | _] = args
 
-    # TODO get path from args
-    Path.join([priv_dir, "decks", "erlang-lib.md"])
+    deck_file
     |> Parser.parse()
     |> learn_deck()
   end
