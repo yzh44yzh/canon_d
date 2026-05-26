@@ -21,7 +21,7 @@ defmodule CanonD do
     cards = Enum.zip(1..total_cards, deck.cards)
     result = Enum.reduce(cards, init_state, &learn_card/2)
     IO.puts("Correct answers: #{result.correct_answers}\nIncorrect answers:#{result.incorrect_answers}")
-    # TODO: repeate incorrect cards
+    # TODO: repeat incorrect cards
     :ok
   end
 
@@ -34,16 +34,17 @@ defmodule CanonD do
       incorrect_cards: ic
     } = state
 
-    IO.puts("  Card #{idx}/#{tc}: #{card.header}")
+    IO.puts("  Card #{idx}/#{tc}\n  #{card.header}")
     your_lines = read_lines([])
     case card_lines do
       ^your_lines -> 
         IO.puts("  Correct\n")
         %LearnState{state | correct_answers: ca + 1}
       _ -> 
-        IO.puts("  Incorrect\n")
+        IO.puts("  Incorrect")
         IO.puts("  Correct Answer:")
         Enum.each(card_lines, fn(line) -> IO.puts("    " <> line) end)
+        IO.puts(" ")
         %LearnState{state | incorrect_answers: ia + 1, incorrect_cards: ic ++ [card]}
     end
   end
