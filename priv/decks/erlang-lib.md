@@ -5,7 +5,7 @@
 ### maps:filter/2
 ```
 filter(Pred, MapOrIter) -> Map
-Pred = fun((Key, Value) -> boolean()
+Pred = fun((Key, Value) -> boolean())
 ```
 
 ### maps:filtermap/2
@@ -21,19 +21,22 @@ Fun = fun((Key, Value1) -> boolean() | {true, Value2})
 concat([Thing]) -> string()
 Thing = atom() | integer() | float() | string()
 
-> lists:concat([doc, '/', file, '.', 3]).
+lists:concat([doc, '/', file, '.', 3]).
 "doc/file.3"
 ```
 
-### lists:enumerate/1,2
+### lists:enumerate/1
 ```
 enumerate(List1) -> List2
 
-> lists:enumerate([a,b,c]).
+lists:enumerate([a,b,c]).
 [{1,a},{2,b},{3,c}]
+```
 
+### lists:enumerate/2
+```
 enumerate(Index, List1) -> List2
 
-> lists:enumerate(10, [a,b,c]).
+lists:enumerate(10, [a,b,c]).
 [{10,a},{11,b},{12,c}]
 ```
