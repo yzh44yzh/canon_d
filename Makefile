@@ -3,7 +3,7 @@ compile:
 	mix escript.build
 	
 run:
-	./canon_d priv/decks/erlang-lib.md
+	./canon_d ./decks/erlang-lists.md
 	
 test:
 	mix test

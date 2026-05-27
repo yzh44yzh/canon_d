@@ -38,8 +38,8 @@ dropwhile(Pred, List1) -> List2
 ```
 duplicate(N, Elem) -> List
 
-lists:duplicate(3, item).
-[item,item,item]
+lists:duplicate(3, elem).
+[elem,elem,elem]
 ```
 
 ## lists:enumerate/1
@@ -149,7 +149,7 @@ lists:seq(1, 5).
 [1,2,3,4,5]
 ```
 
-## lists:seq/2
+## lists:seq/3
 ```
 seq(From, To, Incr) -> Seq
 
