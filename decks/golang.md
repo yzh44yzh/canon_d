@@ -3,9 +3,9 @@
 ## switch arg
 ```
 switch arg {
-case "0":
+case 0:
 	fmt.Println("Zero")
-case "1":
+case 1:
 	fmt.Println("One")
 	fallthrough
 default:
