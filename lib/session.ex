@@ -17,8 +17,20 @@ defmodule CanonD.Session do
     
     result = Enum.reduce(cards, init_state, &learn_card/2)
     IO.puts("Correct answers: #{result.correct_answers}\nIncorrect answers:#{result.incorrect_answers}")
-    # TODO: repeat incorrect cards
+    repeat(result.incorrect_cards, deck) 
+  end
+  
+  @spec repeat([Card.t()], Deck.t) :: :ok
+  def repeat([], %Deck{}) do
     :ok
+  end
+
+  def repeat(incorrect_cards, %Deck{} = deck) do
+    case String.trim(IO.gets("Repeat incorrect cards? y/n ")) do
+      "y" -> 
+        learn_deck(%Deck{deck | cards: incorrect_cards})
+      _ -> :ok
+    end
   end
 
   @spec learn_card({Card.t(), integer()}, LearnState.t()) :: LearnState.t()
