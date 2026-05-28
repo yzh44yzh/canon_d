@@ -5,5 +5,6 @@ compile:
 run:
 	./canon_d ./decks/erlang-lists.md
 	
-test:
+check:
 	mix test
+	mix dialyzer
