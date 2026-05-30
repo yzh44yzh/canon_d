@@ -1,4 +1,4 @@
-# Erlang Lib
+# Erlang lists module
 
 ## lists:append/1
 ```
@@ -18,7 +18,7 @@ lists:append("abc", "def").
 ## lists:concat/1
 ```
 concat([Thing]) -> string()
-Thing = atom() | integer() | float() | string()
+Thing :: atom() | integer() | float() | string()
 
 lists:concat([doc, '/', file, '.', 3]).
 "doc/file.3"
@@ -61,19 +61,19 @@ lists:enumerate(10, [a,b,c]).
 ## lists:filter/2
 ```
 filter(Pred, List1) -> List2
-Pred = fun((Elem) -> boolean())
+Pred :: fun((Elem) -> boolean())
 ```
 
 ## lists:filtermap/2
 ```
 filtermap(Fun, List1) -> List2
-Fun = fun((Elem) -> boolean() | {true, Value})
+Fun :: fun((Elem) -> boolean() | {true, Value})
 ```
 
 ## lists:flatmap/2
 ```
 flatmap(Fun, List1) -> List2
-Fun = fun((A) -> [B])
+Fun :: fun((A) -> [B])
 
 lists:flatmap(fun(X) -> [X,X] end, [a,b,c]).
 [a,a,b,b,c,c]
@@ -82,7 +82,7 @@ lists:flatmap(fun(X) -> [X,X] end, [a,b,c]).
 ## lists:foldl/3
 ```
 foldl(Fun, Acc0, List) -> Acc1
-Fun = fun((Elem, AccIn) -> AccOut)
+Fun :: fun((Elem, AccIn) -> AccOut)
 ```
 
 ## lists:join/2
@@ -96,13 +96,13 @@ lists:join(x, [a,b,c]).
 ## lists:map/2
 ```
 map(Fun, List1) -> List2
-Fun = fun((A) -> B)
+Fun :: fun((A) -> B)
 ```
 
 ## lists:mapfoldl/3
 ```
 mapfoldl(Fun, Acc0, List1) -> {List2, Acc1}
-Fun = fun((A, AccIn) -> {B, AccOut})
+Fun :: fun((A, AccIn) -> {B, AccOut})
 ```
 
 ## lists:member/2
@@ -160,12 +160,12 @@ lists:seq(1, 10, 3).
 ## lists:sort/3
 ```
 sort(Fun, List1) -> List2
-Fun = fun((A, B) -> boolean())
+Fun :: fun((A, B) -> boolean())
 true if A <= B
 ```
 
 ## lists:zipwith/3
 ```
 zipwith(Combine, List1, List2) -> List3
-Combine = fun((X, Y) -> T)
+Combine :: fun((X, Y) -> T)
 ```

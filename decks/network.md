@@ -57,4 +57,8 @@ IEEE 802.3
 ## Стандарт Wi-Fi
 IEEE 802.11
 
+## GRE
+Generic Routing Encapsulation
 
+## DHCP
+Dynamic Host Configuration Protocol 

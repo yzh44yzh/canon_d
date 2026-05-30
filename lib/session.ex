@@ -42,16 +42,16 @@ defmodule CanonD.Session do
       incorrect_cards: ic
     } = state
 
-    IO.puts("  Card #{idx}/#{tc}\n  #{card.header}")
+    IO.puts("#{idx}/#{tc} | #{card.header}")
     your_lines = read_lines([])
     case card_lines do
       ^your_lines -> 
-        IO.puts("  Correct\n")
+        IO.puts("Correct\n")
         %LearnState{state | correct_answers: ca + 1}
       _ -> 
-        IO.puts("  Incorrect")
-        IO.puts("  Correct Answer:")
-        Enum.each(card_lines, fn(line) -> IO.puts("    " <> line) end)
+        IO.puts("Incorrect")
+        IO.puts("Correct Answer:")
+        Enum.each(card_lines, fn(line) -> IO.puts("  " <> line) end)
         IO.puts(" ")
         %LearnState{state | incorrect_answers: ia + 1, incorrect_cards: ic ++ [card]}
     end
@@ -59,7 +59,7 @@ defmodule CanonD.Session do
 
   @spec read_lines([String.t()]) :: [String.t()]
   def read_lines(acc) do
-    case String.trim(IO.gets("  > ")) do
+    case String.trim(IO.gets("> ")) do
       "" -> Enum.reverse(acc)
       line -> read_lines([line | acc])
     end

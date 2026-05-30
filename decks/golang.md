@@ -5,8 +5,8 @@
 switch arg {
 case 0:
 	fmt.Println("Zero")
-case 1:
-	fmt.Println("One")
+case 1, 2:
+	fmt.Println("One Two")
 	fallthrough
 default:
 	fmt.Println("Arg is", arg)
@@ -87,6 +87,21 @@ func Replace(s, old, new string, n int) string
 ### strings.SplitAfter
 ```
 func SplitAfter(s, sep string) []string
+```
+
+### strings.Contains
+```
+func Contains(s, substr string) bool
+```
+
+### strings.TrimSpace
+```
+func TrimSpace(s string) string
+```
+
+### strings.Join
+```
+func Join(elems []string, sep string) string
 ```
 
 ## slice
