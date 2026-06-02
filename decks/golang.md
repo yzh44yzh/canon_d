@@ -40,6 +40,21 @@ fmt.Scanln(&name)
 fmt.Println("Your name is", name)
 ```
 
+## map
+```
+a := make(map[string]int)
+a["key1"] = 1
+a["key2"] = 2
+
+b := map[string]int {
+    "key1": 1,
+    "key2": 2,
+} 
+
+v1, ok1 := b["key1"] // 1, true
+v2, ok2 := b["key3"] // 0, false
+```
+
 ## struct
 ```
 type Contact struct {
@@ -52,58 +67,6 @@ var book = []Contact{}
 book = append(book, Contact{"Bob", "Bobov", "123"})
 ```
 
-## strings
-
-### strings.EqualFold
-```
-func EqualFold(s, t string) bool
-```
-
-### strings.Index
-```
-func Index(s, substr string) int
-```
-
-### strings.HasPrefix
-```
-func HasPrefix(s, prefix string) bool
-```
-
-### strings.Fields
-```
-func Fields(s string) []string
-```
-
-### strings.Split
-```
-func Split(s, sep string) []string
-```
-
-### strings.Replace
-```
-func Replace(s, old, new string, n int) string
-```
-
-### strings.SplitAfter
-```
-func SplitAfter(s, sep string) []string
-```
-
-### strings.Contains
-```
-func Contains(s, substr string) bool
-```
-
-### strings.TrimSpace
-```
-func TrimSpace(s string) string
-```
-
-### strings.Join
-```
-func Join(elems []string, sep string) string
-```
-
 ## slice
 ```
 a := make([]int, 4)
@@ -113,10 +76,41 @@ b := []int{1, 2, 3, 4}
 b = append(b, 5)
 ```
 
-### iterate slice
+## iterate slice
 ```
 a := []int{1, 2, 3, 4}
 for i, v := range a {
 	fmt.Println(i, " ", v)
 }
+```
+
+## delete element from slice
+```
+s = append(s[:i], s[i+1:]...)
+```
+
+## anonymous func
+```
+af := func(p int) int {
+    return p * 2
+}
+res := af(42) 
+```
+
+## sort.Slice
+```
+sort.Slice(points, func(i, j int) bool {
+    return points[i].X < points[j].X
+})
+```
+
+## defer
+```
+f, err := os.Open(filepath)
+defer f.Close()
+```
+
+## check interface
+```
+_, ok := interface{}(a).(MyType)
 ```
