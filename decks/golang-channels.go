@@ -1,0 +1,47 @@
+### sync go-routines
+```
+var waitGroup sync.WaitGroup
+
+func main() {
+	for i := 0; i < 10; i++ {
+		waitGroup.Add(1)
+		go actor(i)
+	}
+	waitGroup.Wait()
+}
+	
+func actor(id int) {
+	defer waitGroup.Done()
+	fmt.Println("actor", id)
+}
+```
+	
+### channels
+```
+var ch = make(chan int)
+
+func main() {
+	for i := 0; i < 10; i++ {
+		go actor(i)
+	}
+	
+	for i := 0; i < 10; i++ {
+		val, open := <- ch
+		fmt.Println(val, open)
+	}
+	close(ch)
+}
+		
+func actor(id int) {
+	fmt.Println("actor", id)
+	ch <- id
+}
+```
+
+### channel direction
+```
+func MyFun(in chan<- int, out <-chan int) {
+	val1 := <- in // read from in
+	out <- 42 // write to out
+}
+```
