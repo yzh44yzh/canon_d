@@ -45,3 +45,15 @@ func MyFun(in chan<- int, out <-chan int) {
 	out <- 42 // write to out
 }
 ```
+
+### select
+```
+select {
+	case res1 := <-ch1:
+		fmt.Println("result from ch1", res1)
+	case res2 := <-ch2:
+		fmt.Println("result from ch2", res2)
+	case <- time.After(2 * time.Second):
+		fmt.Println("timeout")
+}
+```
