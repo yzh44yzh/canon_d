@@ -4,17 +4,21 @@ defmodule CanonD.Session do
   alias CanonD.Model.Card
   alias CanonD.Model.LearnState
   
-  @spec learn_deck(Deck.t()) :: :ok
-  def learn_deck(%Deck{} = deck) do
-    IO.puts("Learn deck \"#{deck.name}\"")
+  @spec learn_deck(Deck.t(), integer() | atom()) :: :ok
+  def learn_deck(%Deck{} = deck, limit \\ :unlimited) do
+    IO.puts("Learn deck \"#{deck.name}\", limit: #{limit}")
     
-    total_cards = length(deck.cards)
-    init_state = %LearnState{total_cards: total_cards}
+    limit = case limit do
+      n when is_integer(n) -> n
+      _ -> length(deck.cards)
+    end
     
     cards = deck.cards
       |> Enum.shuffle()
-      |> Enum.zip(1..total_cards)
+      |> Enum.take(limit)
+      |> Enum.zip(1..limit)
     
+    init_state = %LearnState{total_cards: limit}
     result = Enum.reduce(cards, init_state, &learn_card/2)
     IO.puts("Correct answers: #{result.correct_answers}\nIncorrect answers:#{result.incorrect_answers}")
     repeat(result.incorrect_cards, deck) 

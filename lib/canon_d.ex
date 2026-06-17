@@ -11,13 +11,12 @@ defmodule CanonD do
     case OptionParser.parse(args, options()) do
       {[help: true], [], []} -> help()
       {[version: true], [], []} -> version()
-      {_params, [deck_file], []} -> 
-        # TODO apply num_cards limit
-        # params: [limit: 10]
+      {params, [deck_file], []} -> 
+        limit = Keyword.get(params, :limit, :unlimited)
       
         deck_file
         |> Parser.parse()
-        |> Session.learn_deck()
+        |> Session.learn_deck(limit)
       _ -> 
         help()
     end
