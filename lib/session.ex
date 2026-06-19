@@ -40,17 +40,23 @@ defmodule CanonD.Session do
     end
   end
 
-  # TODO implement mode: :repeat
   @spec learn_card({Card.t(), integer()}, LearnState.t()) :: LearnState.t()
   def learn_card({%Card{lines: card_lines} = card, idx}, %LearnState{} = state) do
     %LearnState{
+      mode: mode,
       total_cards: tc, 
       correct_answers: ca, 
       incorrect_answers: ia, 
       incorrect_cards: ic
     } = state
-
+    
     IO.puts("#{idx}/#{tc} | #{card.header}")
+    if mode == :repeat do
+      IO.puts("Repeat:")
+      Enum.each(card_lines, fn(line) -> IO.puts("  " <> line) end)
+      IO.puts(" ")
+    end
+    
     your_lines = read_lines([])
     case card_lines do
       ^your_lines -> 
