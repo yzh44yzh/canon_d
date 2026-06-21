@@ -26,8 +26,8 @@ func main() {
 	}
 	
 	for i := 0; i < 10; i++ {
-		val, open := <- ch
-		fmt.Println(val, open)
+		val := <- ch
+		fmt.Println(val)
 	}
 	close(ch)
 }
@@ -41,7 +41,7 @@ func actor(id int) {
 ### channel direction
 ```
 func MyFun(in chan<- int, out <-chan int) {
-	val1 := <- in // read from in
+	val := <- in // read from in
 	out <- 42 // write to out
 }
 ```
@@ -49,9 +49,9 @@ func MyFun(in chan<- int, out <-chan int) {
 ### select
 ```
 select {
-	case res1 := <-ch1:
+	case res1 := <- ch1:
 		fmt.Println("result from ch1", res1)
-	case res2 := <-ch2:
+	case res2 := <- ch2:
 		fmt.Println("result from ch2", res2)
 	case <- time.After(2 * time.Second):
 		fmt.Println("timeout")

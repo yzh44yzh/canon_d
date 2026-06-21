@@ -78,8 +78,8 @@ b = append(b, 5)
 
 ## iterate slice
 ```
-a := []int{1, 2, 3, 4}
-for i, v := range a {
+s := []int{1, 2, 3, 4}
+for i, v := range s {
 	fmt.Println(i, " ", v)
 }
 ```
