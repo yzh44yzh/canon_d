@@ -136,7 +136,80 @@ Enum.fetch!([2, 4, 6], 3) # Enum.OutOfBoundsError
 Enum.filter([1, 2, 3], fn x -> rem(x, 2) == 0 end) # [2]
 ```
 
+### Enum.find*
+```
+Enum.find/3
+Enum.find_index/2
+Enum.find_value/2
+```
 
+### Enum.find/3
+```
+find(enumerable, default \\ nil, fun)
+@spec find(t(), default(), (element() -> any())) :: element() | default()
+Enum.find([2, 3, 4], fn x -> rem(x, 2) == 1 end) # 3
+Enum.find([2, 4, 6], fn x -> rem(x, 2) == 1 end) # nil
+Enum.find([2, 4, 6], 0, fn x -> rem(x, 2) == 1 end) # 0
+```
+
+### Enum.flat_map*
+```
+Enum.flat_map/2
+Enum.flat_map_reduce/3
+```
+
+### Enum.flat_map/2
+```
+@spec flat_map(t(), (element() -> t())) :: list()
+Enum.flat_map([:a, :b, :c], fn x -> [x, x] end) # [:a, :a, :b, :b, :c, :c]
+```
+
+### Enum.frequencies*
+```
+Enum.frequencies/1
+Enum.frequencies_by/2
+```
+
+### Enum.group_by/3
+```
+group_by(enumerable, key_fun, value_fun \\ fn x -> x end)
+@spec group_by(t(), (element() -> any()), (element() -> any())) :: map()
+Enum.group_by(~w{ant buffalo cat dingo}, &String.length/1)
+# %{3 => ["ant", "cat"], 5 => ["dingo"], 7 => ["buffalo"]}
+```
+
+### Enum.intersperse/2
+```
+@spec intersperse(t(), element()) :: list()
+Enum.intersperse([1, 2, 3], 0) # [1, 0, 2, 0, 3]
+```
+
+### Enum.into*
+```
+Enum.into/2
+Enum.into/3
+```
+
+### Enum.into/2
+```
+@spec into(Enumerable.t(), Collectable.t()) :: Collectable.t()
+Enum.into([a: 2], %{a: 1, b: 3}) # %{a: 2, b: 3}
+```
+
+### Enum.join/2
+```
+@spec join(t(), binary()) :: binary()
+Enum.join([1, 2, 3], ",") # "1,2,3"
+```
+
+### Enum.map*
+```
+Enum.map/2
+Enum.map_every/2
+Enum.map_intersperse/2
+Enum.map_join/3
+Enum.map_reduce/3
+```
 
 ### Enum.map/2 
 ```
