@@ -60,10 +60,10 @@ defmodule CanonD.Session do
     your_lines = read_lines([])
     case card_lines do
       ^your_lines -> 
-        IO.puts("Correct\n")
+        :io_ansi.fwrite([:green, "Correct\n"])
         %LearnState{state | correct_answers: ca + 1}
       _ -> 
-        IO.puts("Incorrect")
+        :io_ansi.fwrite([:red, "Incorrect\n"])
         IO.puts("Correct Answer:")
         Enum.each(card_lines, fn(line) -> IO.puts("  " <> line) end)
         IO.puts(" ")
