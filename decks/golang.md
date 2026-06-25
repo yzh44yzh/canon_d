@@ -1,5 +1,14 @@
 # Golang
 
+## tooling
+```
+go build
+go fmt
+go mod
+go test
+go vet
+```
+
 ## switch arg
 ```
 switch arg {
@@ -135,7 +144,7 @@ writer.WriteByte('\n')
 
 ## Append to file
 ```
-f, err1 := os.OpenFile("/tmp/f.txt", os.O_APPEND | os.O_CREATE | os.O_WRONLY, 0644)
+f, err1 := os.OpenFile("/tmp/f.txt", os.O_APPEND | os.O_CREATE | os.O_WRONLY, 0o644)
 defer f.Close()
 
 n, err2 := f.Write([]byte("some data"))

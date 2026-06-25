@@ -216,3 +216,38 @@ Enum.map_reduce/3
 @spec map(t(), (element() -> any())) :: list()
 Enum.map([1, 2, 3], fn x -> x * 2 end) # [2, 4, 6]
 ```
+
+### Enum.map_reduce/3
+```
+map_reduce(enumerable, acc, fun)
+@spec map_reduce(t(), acc(), (element(), acc() -> {element(), acc()})) :: {list(), acc()}
+Enum.map_reduce([1, 2, 3], 0, fn x, acc -> {x * 2, x + acc} end) # {[2, 4, 6], 6}
+```
+
+### Enum.min* max*
+```
+Enum.min/3
+Enum.min_by/4
+Enum.max/3
+Enum.max_by/4
+Enum.min_max/2
+Enum.min_max/3
+Enum.min_max_by/4
+```
+
+### Enum.member?/2
+```
+@spec member?(t(), element()) :: boolean()
+```
+
+### Enum.product*
+```
+Enum.product/1
+Enum.product_by/2
+```
+
+### Enum.random/1
+```
+@spec random(t()) :: element()
+```
+

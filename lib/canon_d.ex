@@ -17,7 +17,7 @@ defmodule CanonD do
           "by_heart" -> :by_heart
           _ -> :repeat
         end
-        limit = Keyword.get(params, :limit, :unlimited)
+        limit = Keyword.get(params, :limit, 20)
       
         deck_file
         |> Parser.parse()
@@ -39,8 +39,8 @@ defmodule CanonD do
     USAGE:
         canon_d [OPTIONS] <path/to/deck.md>
     OPTIONS:
-        -m, --mode <M>   Working mode: 'repeat' or 'by_heart'
-        -l, --limit <N>  Limit number of cards to learn
+        -m, --mode <M>   Working mode: 'repeat' (default) or 'by_heart'
+        -l, --limit <N>  Limit number of cards to learn, 20 by default
         -v, --version    Show version
         -h, --help       Show this help message
     """)

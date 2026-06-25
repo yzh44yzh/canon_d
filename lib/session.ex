@@ -6,14 +6,9 @@ defmodule CanonD.Session do
   alias CanonD.Model.LearnState
   
   
-  @spec learn_deck(Deck.t(), Model.mode(), integer() | :unlimited) :: :ok
-  def learn_deck(%Deck{} = deck, mode, limit \\ :unlimited) do
+  @spec learn_deck(Deck.t(), Model.mode(), integer()) :: :ok
+  def learn_deck(%Deck{} = deck, mode, limit) do
     IO.puts("Learn deck \"#{deck.name}\", mode: #{mode}, limit: #{limit}")
-    
-    limit = case limit do
-      n when is_integer(n) -> n
-      _ -> length(deck.cards)
-    end
     
     cards = deck.cards
       |> Enum.shuffle()
@@ -35,7 +30,7 @@ defmodule CanonD.Session do
   defp ask_for_repeat(incorrect_cards, %Deck{} = deck, state) do
     case String.trim(IO.gets("Repeat incorrect cards? y/n ")) do
       "y" -> 
-        learn_deck(%Deck{deck | cards: incorrect_cards}, state.mode)
+        learn_deck(%Deck{deck | cards: incorrect_cards}, state.mode, length(incorrect_cards))
       _ -> :ok
     end
   end
