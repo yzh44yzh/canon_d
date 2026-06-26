@@ -76,7 +76,7 @@ Enum.count([1, 2, 3]) # 3
 ### Enum.dedup*
 ```
 Enum.dedup/1
-Enum.dedup/2
+Enum.dedup_by/2
 ```
 
 ### Enum.dedup/1
@@ -251,3 +251,33 @@ Enum.product_by/2
 @spec random(t()) :: element()
 ```
 
+### Enum.reduce*
+```
+Enum.reduce/2
+Enum.reduce/3
+Enum.reduce_while/3
+```
+
+### Enum.reduce/2
+```
+@spec reduce(t(), (element(), acc() -> acc())) :: acc()
+Enum.reduce([1, 2, 3], fn x, acc -> x + acc end) # 6
+Enum.reduce([], fn x, acc -> x * acc end) # Enum.EmptyError
+```
+
+### Enum.reduce/3
+```
+@spec reduce(t(), acc(), (element(), acc() -> acc())) :: acc()
+Enum.reduce([1, 2, 3], 0, fn x, acc -> x + acc end) # 6
+```
+
+### Enum.reduce_while/3
+```
+@spec reduce_while(t(), any(), (element(), any() -> {:cont, any()} | {:halt, any()})) :: any()
+```
+
+### Enum.reject/2
+```
+@spec reject(t(), (element() -> as_boolean(term()))) :: list()
+Enum.reject([1, 2, 3], fn x -> rem(x, 2) == 0 end) # [1, 3]
+```

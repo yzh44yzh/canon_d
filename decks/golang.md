@@ -149,3 +149,18 @@ defer f.Close()
 
 n, err2 := f.Write([]byte("some data"))
 ```
+
+## Error
+```
+func MyDiv(a, b int) (int, error) {
+	if b == 0 {
+		return 0, errors.New("division by zero")
+	}
+	return a / b, nil
+}
+```
+
+## Errorf
+```
+fmt.Errorf("%d isn't an even number", i)
+```
