@@ -219,7 +219,6 @@ Enum.map([1, 2, 3], fn x -> x * 2 end) # [2, 4, 6]
 
 ### Enum.map_reduce/3
 ```
-map_reduce(enumerable, acc, fun)
 @spec map_reduce(t(), acc(), (element(), acc() -> {element(), acc()})) :: {list(), acc()}
 Enum.map_reduce([1, 2, 3], 0, fn x, acc -> {x * 2, x + acc} end) # {[2, 4, 6], 6}
 ```
@@ -273,11 +272,40 @@ Enum.reduce([1, 2, 3], 0, fn x, acc -> x + acc end) # 6
 
 ### Enum.reduce_while/3
 ```
-@spec reduce_while(t(), any(), (element(), any() -> {:cont, any()} | {:halt, any()})) :: any()
+@spec reduce_while(t(), acc(), (element(), acc() -> {:cont, acc()} | {:halt, acc()})) :: acc()
 ```
 
 ### Enum.reject/2
 ```
 @spec reject(t(), (element() -> as_boolean(term()))) :: list()
 Enum.reject([1, 2, 3], fn x -> rem(x, 2) == 0 end) # [1, 3]
+```
+
+### Enum.reverse*
+```
+Enum.reverse/1
+Enum.reverse/2
+Enum.reverse_slice/3
+```
+
+### Enum.reverse/1
+```
+@spec reverse(t()) :: list()
+```
+
+### Enum.scan/2
+```
+@spec scan(t(), (element(), acc() -> acc())) :: list()
+Enum.scan(["a", "b", "c"], fn x, acc -> acc <> x end) # ["a", "ab", "abc"]
+```
+
+### Enum.scan/3
+```
+@spec scan(t(), acc(), (element(), acc() -> acc())) :: list()
+Enum.scan(["a", "b", "c"], "-", fn x, acc -> acc <> x end) # ["-a", "-ab", "-abc"]
+```
+
+### Enum.shuffle/1
+```
+@spec shuffle(t()) :: list()
 ```
