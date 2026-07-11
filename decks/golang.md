@@ -164,3 +164,8 @@ func MyDiv(a, b int) (int, error) {
 ```
 fmt.Errorf("%d isn't an even number", i)
 ```
+
+## string length
+```
+utf8.RuneCountInString(str)
+```
