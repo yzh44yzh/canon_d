@@ -107,7 +107,7 @@ Enum.map([1, 2, 3], fn x -> x * 2 end) # [2, 4, 6]
 ### Enum.reduce/2
 @spec reduce(t(), (element(), acc() -> acc())) :: acc()
 Enum.reduce([1, 2, 3], fn x, acc -> x + acc end) # 6
-Enum.reduce([], fn x, acc -> x * acc end) # Enum.EmptyError
+Enum.reduce([], fn x, acc -> x + acc end) # Enum.EmptyError
 
 ### Enum.reduce/3
 @spec reduce(t(), acc(), (element(), acc() -> acc())) :: acc()
@@ -143,3 +143,14 @@ Enum.split_while([1, 2, 3, 4], fn x -> x < 3 end) # {[1, 2], [3, 4]}
 ### Enum.split_with/3
 @spec split_with(t(), (element() -> as_boolean(term()))) :: {list(), list()}
 Enum.split_with([1, 2, 3, 4], fn x -> rem(x, 2) == 0 end) # {[2, 4], [1, 3]}
+
+### Enum.sum/1
+@spec sum(t()) :: number()
+
+### Enum.sum_by/2
+@spec sum_by(t(), (element() -> number())) :: number()
+
+### Enum.take/2
+@spec take(t(), integer()) :: list()
+Enum.take([1, 2, 3], 2) # [1, 2]
+
