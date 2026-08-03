@@ -140,7 +140,7 @@ Enum.split([1, 2, 3], 2) # {[1, 2], [3]}
 @spec split_while(t(), (element() -> as_boolean(term()))) :: {list(), list()}
 Enum.split_while([1, 2, 3, 4], fn x -> x < 3 end) # {[1, 2], [3, 4]}
 
-### Enum.split_with/3
+### Enum.split_with/2
 @spec split_with(t(), (element() -> as_boolean(term()))) :: {list(), list()}
 Enum.split_with([1, 2, 3, 4], fn x -> rem(x, 2) == 0 end) # {[2, 4], [1, 3]}
 
