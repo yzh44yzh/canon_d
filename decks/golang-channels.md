@@ -40,9 +40,9 @@ func actor(id int) {
 
 ### channel direction
 ```
-func MyFun(in chan<- int, out <-chan int) {
-	val := <- in // read from in
-	out <- 42 // write to out
+func MyFun(read_from_ch <-chan int, write_to_ch chan<- int) {
+	val1 := <- read_from_ch
+	write_to_ch <- 42
 }
 ```
 
