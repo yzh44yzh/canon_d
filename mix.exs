@@ -25,11 +25,10 @@ defmodule CanonD.MixProject do
       {:dialyxir, "~> 1.4", runtime: false}
     ]
   end
-  
+
   defp escript do
     [
       main_module: CanonD
     ]
   end
-
 end

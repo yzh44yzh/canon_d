@@ -1,5 +1,4 @@
 defmodule CanonD do
-
   alias CanonD.Parser
   alias CanonD.Session
 
@@ -9,20 +8,27 @@ defmodule CanonD do
   @spec main([String.t()]) :: :ok
   def main(args) do
     case OptionParser.parse(args, options()) do
-      {[help: true], [], []} -> help()
-      {[version: true], [], []} -> version()
-      {params, [deck_file], []} -> 
-        mode = case Keyword.get(params, :mode) do
-          "repeat" -> :repeat
-          "by_heart" -> :by_heart
-          _ -> :repeat
-        end
+      {[help: true], [], []} ->
+        help()
+
+      {[version: true], [], []} ->
+        version()
+
+      {params, [deck_file], []} ->
+        mode =
+          case Keyword.get(params, :mode) do
+            "repeat" -> :repeat
+            "by_heart" -> :by_heart
+            _ -> :repeat
+          end
+
         limit = Keyword.get(params, :limit, 20)
-      
+
         deck_file
         |> Parser.parse()
         |> Session.learn_deck(mode, limit)
-      _ -> 
+
+      _ ->
         help()
     end
   end

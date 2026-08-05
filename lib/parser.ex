@@ -1,5 +1,4 @@
 defmodule CanonD.Parser do
-
   alias CanonD.Model.{Card, Deck}
 
   @spec parse(Path.t()) :: Deck.t()
@@ -21,20 +20,22 @@ defmodule CanonD.Parser do
     |> Enum.filter(fn group -> length(group) > 1 end)
     |> Enum.map(&make_card/1)
   end
-  
+
   @spec group_lines_by_header([String.t()]) :: [[String.t()]]
   def group_lines_by_header([]), do: []
+
   def group_lines_by_header([first_line | lines]) do
     Enum.reduce(
       lines,
-      {[], [first_line]}, 
+      {[], [first_line]},
       fn line, {groups, curr_group} ->
         if String.starts_with?(line, "#") do
           {groups ++ [curr_group], [line]}
         else
           {groups, curr_group ++ [line]}
         end
-      end)
+      end
+    )
     |> then(fn {groups, last_group} -> groups ++ [last_group] end)
   end
 
