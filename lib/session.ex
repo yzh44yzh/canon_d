@@ -52,10 +52,12 @@ defmodule CanonD.Session do
         } = state
       ) do
     puts(:blue, "#{idx}/#{tc} | #{card.header}")
-    Enum.each(card_lines, fn line -> IO.puts("  " <> line) end)
-    IO.puts(" ")
 
-    IO.puts("Repeat line by line:")
+    if length(card_lines) != 1 do
+      Enum.each(card_lines, fn line -> IO.puts("  " <> line) end)
+      IO.puts(" ")
+      IO.puts("Repeat line by line:")
+    end
 
     correct =
       Enum.reduce(card_lines, true, fn line, acc ->
