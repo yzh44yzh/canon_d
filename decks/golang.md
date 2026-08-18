@@ -167,5 +167,6 @@ fmt.Errorf("%d isn't an even number", i)
 
 ## string length
 ```
+import "unicode/utf8"
 utf8.RuneCountInString(str)
 ```
