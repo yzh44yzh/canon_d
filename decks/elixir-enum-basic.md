@@ -226,3 +226,19 @@ Enum.split_with([1, 2, 3, 4], fn x -> rem(x, 2) == 0 end) # {[2, 4], [1, 3]}
 Enum.take([1, 2, 3], 2) # [1, 2]
 ```
 
+### Enum.take_while/2
+```
+@spec take_while(t(), (element() -> as_boolean(term()))) :: list()
+Enum.take_while([1, 2, 3], fn x -> x < 3 end) # [1, 2]
+```
+
+### Enum.to_list/1
+```
+@spec to_list(t()) :: [element()]
+```
+
+### Enum.uniq/1
+```
+@spec uniq(t()) :: list()
+Enum.uniq([1, 2, 3, 3, 2, 1]) # [1, 2, 3]
+```

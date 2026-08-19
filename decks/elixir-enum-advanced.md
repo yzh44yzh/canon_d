@@ -167,3 +167,20 @@ sort_by(enumerable, mapper, sorter \\ :asc)
 when mapped_element: element()
 ```
 
+### Enum.take_every/2
+```
+@spec take_every(t(), non_neg_integer()) :: list()
+Enum.take_every(1..10, 2) # [1, 3, 5, 7, 9]
+```
+
+### Enum.take_random/2
+```
+@spec take_random(t(), non_neg_integer()) :: list()
+Enum.take_random(1..10, 2)
+```
+
+### Enum.uniq_by/2
+```
+@spec uniq_by(t(), (element() -> term())) :: list()
+```
+
