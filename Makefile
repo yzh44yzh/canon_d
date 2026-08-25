@@ -1,10 +1,10 @@
 compile:
-	mix compile
-	mix escript.build
+	go fmt
+	go build
 	
 run:
-	./canon_d ./decks/erlang-lists.md
+	./canon_d ./decks/golang.md
 	
 check:
-	mix test
-	mix dialyzer
+	go test -v ./..
+	go vet
