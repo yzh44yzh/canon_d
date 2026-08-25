@@ -28,22 +28,29 @@ type LinePart struct {
 	Content string
 }
 
+func MakeLine(content string) Line {
+	parts := strings.Split(content, "`")
+	lineParts := make([]LinePart, len(parts))
+	visible := true
+
+	for i, part := range parts {
+		lineParts[i] = LinePart{Visible: visible, Content: part}
+		visible = !visible
+	}
+
+	return Line{
+		Original: content,
+		Parts:    lineParts,
+	}
+}
+
 func (l Line) Show() string {
 	var res strings.Builder
-	last := len(l.Parts) - 1
-
-	for i, part := range l.Parts {
+	for _, part := range l.Parts {
 		if part.Visible {
 			res.WriteString(part.Content)
 		} else {
-			switch {
-			case i == last:
-				res.WriteString("???")
-			case i == 0:
-				res.WriteString("??? ")
-			default:
-				res.WriteString(" ??? ")
-			}
+			res.WriteString("???")
 		}
 	}
 	return res.String()
@@ -59,58 +66,12 @@ func ExampleDeck() Deck {
 }
 
 func ExampleCard() Card {
-	// ### MergeTree
-	// Семейство движков `MergeTree` позволяют схлопывать данные в фоновом режиме.
-	// Их 7 штук, из них 3 позволяют реализовать update.
-	// `ReplacingMergeTree`
-	// `CollapsingMergeTree`
-	// `VersionedCollapsingMergeTree`
-
-	content1 := "Семейство движков"
-	linePart1 := LinePart{Visible: true, Content: content1}
-
-	content2 := "MergeTree"
-	linePart2 := LinePart{Visible: false, Content: content2}
-
-	content3 := "позволяют схлопывать данные в фоновом режиме."
-	linePart3 := LinePart{Visible: true, Content: content3}
-
-	line1 := Line{
-		Original: content1 + " " + content2 + " " + content3,
-		Parts:    []LinePart{linePart1, linePart2, linePart3},
-	}
-
-	content4 := "Их 7 штук, из них 3 позволяют реализовать update."
-	linePart4 := LinePart{Visible: true, Content: content4}
-
-	line2 := Line{
-		Original: content4,
-		Parts:    []LinePart{linePart4},
-	}
-
-	content5 := "ReplacingMergeTree"
-	linePart5 := LinePart{Visible: false, Content: content5}
-
-	line3 := Line{
-		Original: content5,
-		Parts:    []LinePart{linePart5},
-	}
-
-	content6 := "CollapsingMergeTree"
-	linePart6 := LinePart{Visible: false, Content: content6}
-
-	line4 := Line{
-		Original: content6,
-		Parts:    []LinePart{linePart6},
-	}
-
-	content7 := "VersionedCollapsingMergeTree"
-	linePart7 := LinePart{Visible: false, Content: content7}
-
-	line5 := Line{
-		Original: content7,
-		Parts:    []LinePart{linePart7},
-	}
+	// TODO MakeCard
+	line1 := MakeLine("Семейство движков `MergeTree` позволяют схлопывать данные в фоновом режиме.")
+	line2 := MakeLine("Их 7 штук, из них 3 позволяют реализовать update:")
+	line3 := MakeLine("- `ReplacingMergeTree`")
+	line4 := MakeLine("- `CollapsingMergeTree`")
+	line5 := MakeLine("- `VersionedCollapsingMergeTree`")
 
 	return Card{
 		Header: "MergeTree",

@@ -4,6 +4,6 @@ compile:
 run:
 	./canon_d ./decks/golang.md
 	
-check:
+test:
 	go test -v ./...
-	go vet
+	go vet ./...
