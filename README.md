@@ -31,31 +31,6 @@ Canon D -- Canon for Development -- основополагающие базов�
 IDE и ИИ не отменяют необходимость тренировать свой естественный интеллект. 
 
 
-## Сборка 
-
-```
-$ make
-mix compile
-mix escript.build
-Generated escript canon_d with MIX_ENV=dev
-```
-
-На выходе escript, который запускается как консольная утилита:
-
-```
-$ ./canon_d 
-USAGE:
-    canon_d [OPTIONS] <path/to/deck.md>
-OPTIONS:
-    -m, --mode <M>   Working mode: 'repeat' or 'by_heart'
-    -l, --limit <N>  Limit number of cards to learn
-    -v, --version    Show version
-    -h, --help       Show this help message
-```
-
-Требуется OTP 29, потому что используется эрланговский модуль `io_ansi`.
-
-
 ## Использование
 
 ```
