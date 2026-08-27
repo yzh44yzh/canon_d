@@ -2,6 +2,7 @@ package canon_d
 
 import (
 	"strings"
+	"unicode/utf8"
 )
 
 type Deck struct {
@@ -16,8 +17,6 @@ type Card struct {
 	Lines  []Line
 }
 
-// TODO CardPart :: Line | CodeBlock
-
 type Line struct {
 	Original string
 	Parts    []LinePart
@@ -29,19 +28,55 @@ type LinePart struct {
 }
 
 func MakeLine(content string) Line {
-	parts := strings.Split(content, "`")
-	lineParts := make([]LinePart, len(parts))
-	visible := true
+	lineParts := []LinePart{}
+	currPart := LinePart{
+		Content: "",
+		Visible: true,
+	}
 
-	for i, part := range parts {
-		lineParts[i] = LinePart{Visible: visible, Content: part}
-		visible = !visible
+	for content != "" {
+		after, found := cutSep(content)
+		if found {
+			if currPart.Content != "" {
+				lineParts = append(lineParts, currPart)
+			}
+			nextPart := LinePart{
+				Content: "",
+				Visible: !currPart.Visible,
+			}
+			currPart = nextPart
+			content = after
+		} else {
+			firstRune, _ := utf8.DecodeRuneInString(content)
+			first := string(firstRune)
+			currPart.Content += first
+			content = strings.TrimPrefix(content, first)
+		}
+	}
+	if currPart.Content != "" {
+		lineParts = append(lineParts, currPart)
 	}
 
 	return Line{
 		Original: content,
 		Parts:    lineParts,
 	}
+}
+
+func cutSep(str string) (string, bool) {
+	separators := []string{
+		"`",  // code
+		"**", // bold
+		"__", // bold
+	}
+	for _, sep := range separators {
+		after, found := strings.CutPrefix(str, sep)
+		if found {
+			return after, true
+		}
+	}
+
+	return "", false
 }
 
 func (l Line) Show() string {
