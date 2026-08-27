@@ -17,6 +17,32 @@ type Card struct {
 	Lines  []Line
 }
 
+func MakeCard(content string) Card {
+	rawLines := strings.Split(content, "\n")
+	header := ""
+	lines := []Line{}
+
+	for _, l := range rawLines {
+		l = strings.TrimSpace(l)
+		if l == "" {
+			continue
+		}
+
+		if header == "" {
+			header = strings.Trim(l, "#")
+			header = strings.TrimSpace(header)
+		} else {
+			line := MakeLine(l)
+			lines = append(lines, line)
+		}
+	}
+
+	return Card{
+		Header: header,
+		Lines:  lines,
+	}
+}
+
 type Line struct {
 	Original string
 	Parts    []LinePart
@@ -101,15 +127,15 @@ func ExampleDeck() Deck {
 }
 
 func ExampleCard() Card {
-	// TODO MakeCard
-	line1 := MakeLine("Семейство движков `MergeTree` позволяют схлопывать данные в фоновом режиме.")
-	line2 := MakeLine("Их 7 штук, из них 3 позволяют реализовать update:")
-	line3 := MakeLine("- `ReplacingMergeTree`")
-	line4 := MakeLine("- `CollapsingMergeTree`")
-	line5 := MakeLine("- `VersionedCollapsingMergeTree`")
+	content := " \n" + 
+	"### MakeCard\n" +  
+	"Семейство движков `MergeTree` позволяют схлопывать данные в фоновом режиме.\n" +
+	"   \n" +
+	"Их 7 штук, из них 3 позволяют реализовать update:\n" +
+	"   \n" +
+	"- `ReplacingMergeTree`\n" +
+	"- `CollapsingMergeTree`\n" +
+	"- `VersionedCollapsingMergeTree`\n"
 
-	return Card{
-		Header: "MergeTree",
-		Lines:  []Line{line1, line2, line3, line4, line5},
-	}
+	return MakeCard(content)
 }
