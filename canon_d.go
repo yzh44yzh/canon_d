@@ -1,6 +1,7 @@
 package canon_d
 
 import (
+	"regexp"
 	"strings"
 	"unicode/utf8"
 )
@@ -10,7 +11,9 @@ type Deck struct {
 	Cards  []Card
 }
 
-// TODO Cards group in trees by different header levels
+var reBold *regexp.Regexp = regexp.MustCompile(`\*\*(\S.*?)\*\*`) // **bold text**, but __bold text__ is not supported
+var reItalic *regexp.Regexp = regexp.MustCompile(`\*(\S.*?)\*`) // *italic text*, but _italic text_ is not supported
+var reCode *regexp.Regexp = regexp.MustCompile("`(\\S.*?)`") // `inline code`
 
 type Card struct {
 	Header string
