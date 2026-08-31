@@ -26,7 +26,7 @@ func Test_MakeLine(t *testing.T) {
 		{in: "a `b` c **d**", out: "a ??? c ???"},
 		{in: "**b**", out: "???"},
 		{in: "a *b* c *d*", out: "a *b* c *d*"},
-		{in: "**b** c __d__ e", out: "??? c ??? e"},
+		{in: "**b** c _d_ e", out: "??? c ??? e"},
 	}
 
 	for _, set := range sets {
