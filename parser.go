@@ -29,7 +29,7 @@ func MakeCard(content string) Card {
 			header = strings.Trim(l, "#")
 			header = strings.TrimSpace(header)
 		} else {
-			line := MakeLine(l)
+			line := makeLine(l)
 			lines = append(lines, line)
 		}
 	}
@@ -40,7 +40,7 @@ func MakeCard(content string) Card {
 	}
 }
 
-func MakeLine(content string) Line {
+func makeLine(content string) Line {
 	lineParts := []LinePart{}
 	rest := content
 
@@ -81,40 +81,33 @@ func MakeLine(content string) Line {
 }
 
 func findPart(content string) (before, part, after string, found bool) {
-	idxB := reBold.FindStringIndex(content)
-	idxI := reItalic.FindStringIndex(content)
-	idxC := reCode.FindStringIndex(content)
-
 	var minIdx []int = nil
 	cut := 0
 
+	idxB := reBold.FindStringIndex(content)
 	if idxB != nil {
 		minIdx = idxB
 		cut = 2
 	}
 
-	if idxI != nil {
-		if minIdx == nil {
-			minIdx = idxI
-			cut = 1
-		} else {
-			if idxI[0] < minIdx[0] {
-				minIdx = idxI
-				cut = 1
-			}
-		}
+	idxI := reItalic.FindStringIndex(content)
+	switch {
+	case idxI != nil && minIdx == nil:
+		minIdx = idxI
+		cut = 1
+	case idxI != nil && idxI[0] < minIdx[0]:
+		minIdx = idxI
+		cut = 1
 	}
 
-	if idxC != nil {
-		if minIdx == nil {
-			minIdx = idxC
-			cut = 1
-		} else {
-			if idxC[0] < minIdx[0] {
-				minIdx = idxC
-				cut = 1
-			}
-		}
+	idxC := reCode.FindStringIndex(content)
+	switch {
+	case idxC != nil && minIdx == nil:
+		minIdx = idxC
+		cut = 1
+	case idxC != nil && idxC[0] < minIdx[0]:
+		minIdx = idxC
+		cut = 1
 	}
 
 	if minIdx == nil {

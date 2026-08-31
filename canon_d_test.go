@@ -30,9 +30,94 @@ func Test_MakeLine(t *testing.T) {
 	}
 
 	for _, set := range sets {
-		line := MakeLine(set.in)
+		line := makeLine(set.in)
 		if line.Show() != set.out {
 			t.Errorf("in: '%v', expect out: '%v', real out: '%v', line: '%v'", set.in, set.out, line.Show(), line)
+		}
+	}
+}
+
+func Test_FindPart(t *testing.T) {
+	type TestSet struct {
+		content string
+		before  string
+		part    string
+		after   string
+		found   bool
+	}
+
+	sets := []TestSet{
+		{
+			content: "Семейство движков `MergeTree` позволяют",
+			before:  "Семейство движков ",
+			part:    "MergeTree",
+			after:   " позволяют",
+			found:   true,
+		},
+		{
+			content: "Семейство движков MergeTree позволяют",
+			before:  "",
+			part:    "",
+			after:   "",
+			found:   false,
+		},
+		{
+			content: "**aaa** bbb",
+			before:  "",
+			part:    "aaa",
+			after:   " bbb",
+			found:   true,
+		},
+		{
+			content: "aaa **bbb**",
+			before:  "aaa ",
+			part:    "bbb",
+			after:   "",
+			found:   true,
+		},
+		{
+			content: "`aaa` bbb ccc",
+			before:  "",
+			part:    "aaa",
+			after:   " bbb ccc",
+			found:   true,
+		},
+		{
+			content: "aaa _bbb_ ccc",
+			before:  "aaa ",
+			part:    "bbb",
+			after:   " ccc",
+			found:   true,
+		},
+		{
+			content: "`aaa` _bbb_ **ccc**",
+			before:  "",
+			part:    "aaa",
+			after:   " _bbb_ **ccc**",
+			found:   true,
+		},
+		{
+			content: "aaa **bbb** `ccc`",
+			before:  "aaa ",
+			part:    "bbb",
+			after:   " `ccc`",
+			found:   true,
+		},
+	}
+
+	for i, set := range sets {
+		before, part, after, found := findPart(set.content)
+		if before != set.before {
+			t.Errorf("%d expect before: '%v', real before: '%v'", i, set.before, before)
+		}
+		if part != set.part {
+			t.Errorf("%d expect part: '%v', real part: '%v'", i, set.part, part)
+		}
+		if after != set.after {
+			t.Errorf("%d expect after: '%v', real after: '%v'", i, set.after, after)
+		}
+		if found != set.found {
+			t.Errorf("%d expect found: '%v', real found: '%v'", i, set.found, found)
 		}
 	}
 }
