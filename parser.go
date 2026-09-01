@@ -1,6 +1,7 @@
 package canon_d
 
 import (
+	// "fmt"
 	"regexp"
 	"strings"
 )
@@ -14,8 +15,35 @@ var reItalic *regexp.Regexp = regexp.MustCompile(`\_(\S.*?)\_`)
 // `inline code`
 var reCode *regexp.Regexp = regexp.MustCompile("`(\\S.*?)`")
 
+func MakeDeck(header, content string) Deck {
+	lines := strings.Split(content, "\n")
+
+	cards := []Card{}
+	cardLines := []string{}
+	for _, line := range lines {
+		if strings.HasPrefix(line, "#") {
+			if len(cardLines) > 0 {
+				card := makeCard(cardLines)
+				cards = append(cards, card)
+				cardLines = cardLines[:0]
+			}
+		}
+		cardLines = append(cardLines, line)
+	}
+
+	// TODO support headers hierarchy
+
+	return Deck{
+		Header: header,
+		Cards:  cards,
+	}
+}
+
 func MakeCard(content string) Card {
-	rawLines := strings.Split(content, "\n")
+	return makeCard(strings.Split(content, "\n"))
+}
+
+func makeCard(rawLines []string) Card {
 	header := ""
 	lines := []Line{}
 
