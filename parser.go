@@ -15,23 +15,24 @@ var reItalic *regexp.Regexp = regexp.MustCompile(`\_(\S.*?)\_`)
 // `inline code`
 var reCode *regexp.Regexp = regexp.MustCompile("`(\\S.*?)`")
 
+// TODO support headers hierarchy
 func MakeDeck(header, content string) Deck {
-	lines := strings.Split(content, "\n")
-
 	cards := []Card{}
 	cardLines := []string{}
+
+	lines := strings.Split(content, "\n")
 	for _, line := range lines {
+		// end of the current card,
 		if strings.HasPrefix(line, "#") {
-			if len(cardLines) > 0 {
-				card := makeCard(cardLines)
+			card, ok := makeCard(cardLines)
+			if ok {
 				cards = append(cards, card)
-				cardLines = cardLines[:0]
 			}
+			cardLines = cardLines[:0]
 		}
+		// start for the next card
 		cardLines = append(cardLines, line)
 	}
-
-	// TODO support headers hierarchy
 
 	return Deck{
 		Header: header,
@@ -39,29 +40,26 @@ func MakeDeck(header, content string) Deck {
 	}
 }
 
-func makeCard(rawLines []string) Card {
-	header := ""
-	lines := []Line{}
+func makeCard(rawLines []string) (Card, bool) {
+	card := Card{}
 
-	for _, l := range rawLines {
+	if len(rawLines) < 2 {
+		return card, false
+	}
+
+	header := strings.Trim(rawLines[0], "#")
+	card.Header = strings.TrimSpace(header)
+
+	for _, l := range rawLines[1:] {
 		l = strings.TrimSpace(l)
 		if l == "" {
 			continue
 		}
 
-		if header == "" {
-			header = strings.Trim(l, "#")
-			header = strings.TrimSpace(header)
-		} else {
-			line := makeLine(l)
-			lines = append(lines, line)
-		}
+		line := makeLine(l)
+		card.Lines = append(card.Lines, line)
 	}
-
-	return Card{
-		Header: header,
-		Lines:  lines,
-	}
+	return card, true
 }
 
 func makeLine(content string) Line {
