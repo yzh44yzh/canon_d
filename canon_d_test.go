@@ -1,10 +1,11 @@
 package canon_d
 
 import (
+	"fmt"
 	"testing"
 )
 
-func Test_MakeLine(t *testing.T) {
+func TestMakeLine(t *testing.T) {
 	type TestSet struct {
 		in  string
 		out string
@@ -29,15 +30,18 @@ func Test_MakeLine(t *testing.T) {
 		{in: "**b** c _d_ e", out: "??? c ??? e"},
 	}
 
-	for _, set := range sets {
-		line := makeLine(set.in)
-		if line.Show() != set.out {
-			t.Errorf("in: '%v', expect out: '%v', real out: '%v', line: '%v'", set.in, set.out, line.Show(), line)
-		}
+	for i, set := range sets {
+		name := fmt.Sprintf("set_%d", i)
+		t.Run(name, func(t *testing.T) {
+			line := makeLine(set.in)
+			if line.Show() != set.out {
+				t.Errorf("in: '%v', expect out: '%v', real out: '%v', line: '%v'", set.in, set.out, line.Show(), line)
+			}
+		})
 	}
 }
 
-func Test_FindPart(t *testing.T) {
+func TestFindPart(t *testing.T) {
 	type TestSet struct {
 		content string
 		before  string
@@ -106,18 +110,21 @@ func Test_FindPart(t *testing.T) {
 	}
 
 	for i, set := range sets {
-		before, part, after, found := findPart(set.content)
-		if before != set.before {
-			t.Errorf("%d expect before: '%v', real before: '%v'", i, set.before, before)
-		}
-		if part != set.part {
-			t.Errorf("%d expect part: '%v', real part: '%v'", i, set.part, part)
-		}
-		if after != set.after {
-			t.Errorf("%d expect after: '%v', real after: '%v'", i, set.after, after)
-		}
-		if found != set.found {
-			t.Errorf("%d expect found: '%v', real found: '%v'", i, set.found, found)
-		}
+		name := fmt.Sprintf("set_%d", i)
+		t.Run(name, func(t *testing.T) {
+			before, part, after, found := findPart(set.content)
+			if before != set.before {
+				t.Errorf("%d expect before: '%v', real before: '%v'", i, set.before, before)
+			}
+			if part != set.part {
+				t.Errorf("%d expect part: '%v', real part: '%v'", i, set.part, part)
+			}
+			if after != set.after {
+				t.Errorf("%d expect after: '%v', real after: '%v'", i, set.after, after)
+			}
+			if found != set.found {
+				t.Errorf("%d expect found: '%v', real found: '%v'", i, set.found, found)
+			}
+		})
 	}
 }

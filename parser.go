@@ -39,10 +39,6 @@ func MakeDeck(header, content string) Deck {
 	}
 }
 
-func MakeCard(content string) Card {
-	return makeCard(strings.Split(content, "\n"))
-}
-
 func makeCard(rawLines []string) Card {
 	header := ""
 	lines := []Line{}
