@@ -17,6 +17,7 @@ var reCode *regexp.Regexp = regexp.MustCompile("`(\\S.*?)`")
 
 // TODO support headers hierarchy
 func MakeDeck(header, content string) Deck {
+	var currHeader *CardHeader = nil
 	cards := []Card{}
 	cardLines := []string{}
 
@@ -24,19 +25,25 @@ func MakeDeck(header, content string) Deck {
 	for _, line := range lines {
 		// end of the current card,
 		if strings.HasPrefix(line, "#") {
-			card, err := makeCard(cardLines)
+			card, err := makeCard(currHeader, cardLines)
 			if err == nil {
 				cards = append(cards, card)
 			}
 			cardLines = cardLines[:0]
+
+			// start for the next card
+			header := makeCardHeader(line)
+			// if currHeader == nil {
+			// 	currHeader = &header
+			// }
+			currHeader = &header
+		} else {
+			cardLines = append(cardLines, line)
 		}
-		// start for the next card
-		header := strings.TrimSpace(line)
-		cardLines = append(cardLines, header)
 	}
 
 	// last card
-	card, err := makeCard(cardLines)
+	card, err := makeCard(currHeader, cardLines)
 	if err == nil {
 		cards = append(cards, card)
 	}
@@ -60,14 +67,16 @@ func makeCardHeader(line string) CardHeader {
 	}
 }
 
-func makeCard(rawLines []string) (Card, error) {
+func makeCard(header *CardHeader, rawLines []string) (Card, error) {
 	card := Card{}
-	if len(rawLines) == 0 {
-		return card, errors.New("no lines to create card")
+
+	if header == nil {
+		return card, errors.New("no header")
 	}
 
-	card.Header = rawLines[0]
-	for _, l := range rawLines[1:] {
+	card.Header = *header
+
+	for _, l := range rawLines {
 		l = strings.TrimSpace(l)
 		if l == "" {
 			continue

@@ -12,10 +12,11 @@ type Deck struct {
 type CardHeader struct {
 	Level   int
 	Content string
+	Parent  *CardHeader
 }
 
 type Card struct {
-	Header string // CardHeader
+	Header CardHeader
 	Lines  []Line
 }
 
