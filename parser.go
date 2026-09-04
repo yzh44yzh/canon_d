@@ -1,7 +1,7 @@
 package canon_d
 
 import (
-	// "fmt"
+	"errors"
 	"regexp"
 	"strings"
 )
@@ -24,14 +24,21 @@ func MakeDeck(header, content string) Deck {
 	for _, line := range lines {
 		// end of the current card,
 		if strings.HasPrefix(line, "#") {
-			card, ok := makeCard(cardLines)
-			if ok {
+			card, err := makeCard(cardLines)
+			if err == nil {
 				cards = append(cards, card)
 			}
 			cardLines = cardLines[:0]
 		}
 		// start for the next card
-		cardLines = append(cardLines, line)
+		header := strings.TrimSpace(line)
+		cardLines = append(cardLines, header)
+	}
+
+	// last card
+	card, err := makeCard(cardLines)
+	if err == nil {
+		cards = append(cards, card)
 	}
 
 	return Deck{
@@ -40,16 +47,13 @@ func MakeDeck(header, content string) Deck {
 	}
 }
 
-func makeCard(rawLines []string) (Card, bool) {
+func makeCard(rawLines []string) (Card, error) {
 	card := Card{}
-
-	if len(rawLines) < 2 {
-		return card, false
+	if len(rawLines) == 0 {
+		return card, errors.New("no lines to created card")
 	}
 
-	header := strings.Trim(rawLines[0], "#")
-	card.Header = strings.TrimSpace(header)
-
+	card.Header = rawLines[0]
 	for _, l := range rawLines[1:] {
 		l = strings.TrimSpace(l)
 		if l == "" {
@@ -59,7 +63,11 @@ func makeCard(rawLines []string) (Card, bool) {
 		line := makeLine(l)
 		card.Lines = append(card.Lines, line)
 	}
-	return card, true
+
+	if len(card.Lines) == 0 {
+		return card, errors.New("empty card")
+	}
+	return card, nil
 }
 
 func makeLine(content string) Line {
