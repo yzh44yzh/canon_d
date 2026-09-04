@@ -15,6 +15,13 @@ type CardHeader struct {
 	Parent  *CardHeader
 }
 
+func (ch CardHeader) Show() string {
+	if ch.Parent != nil {
+		return ch.Parent.Show() + " / " + ch.Content
+	}
+	return ch.Content
+}
+
 type Card struct {
 	Header CardHeader
 	Lines  []Line

@@ -15,7 +15,7 @@ func main() {
 
 	for _, card := range deck.Cards {
 		fmt.Println("---")
-		fmt.Println(card.Header)
+		fmt.Println(card.Header.Show())
 		for _, line := range card.Lines {
 			fmt.Println(line.Show())
 		}

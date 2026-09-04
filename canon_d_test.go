@@ -32,6 +32,38 @@ func Test_makeCardHeader(t *testing.T) {
 	}
 }
 
+func TestCardHeaderShow(t *testing.T) {
+	h1 := CardHeader{
+		Level:   1,
+		Content: "aaa",
+	}
+	h2 := CardHeader{
+		Level:   2,
+		Content: "bbb",
+		Parent:  &h1,
+	}
+	h3 := CardHeader{
+		Level:   3,
+		Content: "ccc",
+		Parent:  &h2,
+	}
+
+	s1 := h1.Show()
+	if s1 != "aaa" {
+		t.Errorf("invalid result for h1.Show '%v'", s1)
+	}
+
+	s2 := h2.Show()
+	if s2 != "aaa / bbb" {
+		t.Errorf("invalid result for h2.Show '%v'", s2)
+	}
+
+	s3 := h3.Show()
+	if s3 != "aaa / bbb / ccc" {
+		t.Errorf("invalid result for h3.Show '%v'", s3)
+	}
+}
+
 func TestMakeLine(t *testing.T) {
 	sets := []struct {
 		in  string

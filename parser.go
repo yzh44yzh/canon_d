@@ -15,7 +15,6 @@ var reItalic *regexp.Regexp = regexp.MustCompile(`\_(\S.*?)\_`)
 // `inline code`
 var reCode *regexp.Regexp = regexp.MustCompile("`(\\S.*?)`")
 
-// TODO support headers hierarchy
 func MakeDeck(header, content string) Deck {
 	var currHeader *CardHeader = nil
 	cards := []Card{}
@@ -33,10 +32,19 @@ func MakeDeck(header, content string) Deck {
 
 			// start for the next card
 			header := makeCardHeader(line)
-			// if currHeader == nil {
-			// 	currHeader = &header
-			// }
-			currHeader = &header
+			for {
+				if currHeader == nil {
+					currHeader = &header
+					break
+				}
+				if currHeader.Level < header.Level {
+					header.Parent = currHeader
+					currHeader = &header
+					break
+				} else {
+					currHeader = currHeader.Parent
+				}
+			}
 		} else {
 			cardLines = append(cardLines, line)
 		}
