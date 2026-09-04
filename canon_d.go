@@ -9,8 +9,13 @@ type Deck struct {
 	Cards  []Card
 }
 
+type CardHeader struct {
+	Level   int
+	Content string
+}
+
 type Card struct {
-	Header string
+	Header string // CardHeader
 	Lines  []Line
 }
 

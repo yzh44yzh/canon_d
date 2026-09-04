@@ -47,10 +47,23 @@ func MakeDeck(header, content string) Deck {
 	}
 }
 
+func makeCardHeader(line string) CardHeader {
+	level := 0
+	for strings.HasPrefix(line, "#") {
+		level += 1
+		line = line[1:]
+	}
+
+	return CardHeader{
+		Level:   level,
+		Content: strings.TrimSpace(line),
+	}
+}
+
 func makeCard(rawLines []string) (Card, error) {
 	card := Card{}
 	if len(rawLines) == 0 {
-		return card, errors.New("no lines to created card")
+		return card, errors.New("no lines to create card")
 	}
 
 	card.Header = rawLines[0]

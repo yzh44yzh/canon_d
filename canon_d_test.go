@@ -5,13 +5,38 @@ import (
 	"testing"
 )
 
-func TestMakeLine(t *testing.T) {
-	type TestSet struct {
-		in  string
-		out string
+func Test_makeCardHeader(t *testing.T) {
+	sets := []struct {
+		in    string
+		out   string
+		level int
+	}{
+		{in: "# aaa ", out: "aaa", level: 1},
+		{in: "#    aaa bb ", out: "aaa bb", level: 1},
+		{in: "##  bbbb ", out: "bbbb", level: 2},
+		{in: "### ccc", out: "ccc", level: 3},
+		{in: "##### Some Header", out: "Some Header", level: 5},
 	}
 
-	sets := []TestSet{
+	for i, set := range sets {
+		name := fmt.Sprintf("set_%d", i)
+		t.Run(name, func(t *testing.T) {
+			header := makeCardHeader(set.in)
+			if header.Content != set.out {
+				t.Errorf("in: '%v', expect out: '%v', real out: '%v'", set.in, set.out, header.Content)
+			}
+			if header.Level != set.level {
+				t.Errorf("in: '%v', expect level: '%v', real level: '%v'", set.in, set.level, header.Level)
+			}
+		})
+	}
+}
+
+func TestMakeLine(t *testing.T) {
+	sets := []struct {
+		in  string
+		out string
+	}{
 		{in: "a a a", out: "a a a"},
 		{in: "a `b` c", out: "a ??? c"},
 		{in: "a `b` c `d` e", out: "a ??? c ??? e"},
@@ -42,15 +67,13 @@ func TestMakeLine(t *testing.T) {
 }
 
 func TestFindPart(t *testing.T) {
-	type TestSet struct {
+	sets := []struct {
 		content string
 		before  string
 		part    string
 		after   string
 		found   bool
-	}
-
-	sets := []TestSet{
+	}{
 		{
 			content: "Семейство движков `MergeTree` позволяют",
 			before:  "Семейство движков ",
