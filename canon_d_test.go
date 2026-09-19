@@ -3,7 +3,120 @@ package canon_d
 import (
 	"fmt"
 	"testing"
+
+	"github.com/google/go-cmp/cmp"
 )
+
+func Test_makeCard(t *testing.T) {
+	header1 := makeCardHeader("# aaa")
+	card1, _ := makeCard(&header1, []string{"`line 1`"})
+
+	expectCard1 := Card{
+		Header: CardHeader{Level: 1, Content: "aaa"},
+		Lines: []Line{
+			Line{
+				Original: "`line 1`",
+				Parts: []LinePart{
+					LinePart{
+						Visible: false,
+						Content: "line 1",
+					},
+				},
+			},
+		},
+	}
+	if diff1 := cmp.Diff(expectCard1, card1); diff1 != "" {
+		t.Error(diff1)
+	}
+
+	header2 := makeCardHeader("## bbb")
+	card2, _ := makeCard(&header2, []string{"aaa `bbb` ccc"})
+
+	expectCard2 := Card{
+		Header: CardHeader{Level: 2, Content: "bbb"},
+		Lines: []Line{
+			Line{
+				Original: "aaa `bbb` ccc",
+				Parts: []LinePart{
+					LinePart{
+						Visible: true,
+						Content: "aaa ",
+					},
+					LinePart{
+						Visible: false,
+						Content: "bbb",
+					},
+					LinePart{
+						Visible: true,
+						Content: " ccc",
+					},
+				},
+			},
+		},
+	}
+	if diff2 := cmp.Diff(expectCard2, card2); diff2 != "" {
+		t.Error(diff2)
+	}
+
+	header3 := makeCardHeader("## ccc")
+	card3, _ := makeCard(&header3, []string{
+		"aaa `bbb`",
+		"```sql",
+		"select * from",
+		"my_table",
+		"```",
+		"ddd",
+	})
+
+	expectCard3 := Card{
+		Header: CardHeader{Level: 2, Content: "ccc"},
+		Lines: []Line{
+			Line{
+				Original: "aaa `bbb`",
+				Parts: []LinePart{
+					LinePart{
+						Visible: true,
+						Content: "aaa ",
+					},
+					LinePart{
+						Visible: false,
+						Content: "bbb",
+					},
+				},
+			},
+			Line{
+				Original: "select * from",
+				Parts: []LinePart{
+					LinePart{
+						Visible: false,
+						Content: "select * from",
+					},
+				},
+			},
+			Line{
+				Original: "my_table",
+				Parts: []LinePart{
+					LinePart{
+						Visible: false,
+						Content: "my_table",
+					},
+				},
+			},
+			Line{
+				Original: "ddd",
+				Parts: []LinePart{
+					LinePart{
+						Visible: true,
+						Content: "ddd",
+					},
+				},
+			},
+		},
+	}
+	if diff3 := cmp.Diff(expectCard3, card3); diff3 != "" {
+		t.Error(diff3)
+	}
+}
 
 func Test_makeCardHeader(t *testing.T) {
 	sets := []struct {

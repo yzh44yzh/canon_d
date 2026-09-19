@@ -84,13 +84,25 @@ func makeCard(header *CardHeader, rawLines []string) (Card, error) {
 
 	card.Header = *header
 
+	var multiLineCode bool = false
+	var line Line
+
 	for _, l := range rawLines {
 		l = strings.TrimSpace(l)
 		if l == "" {
 			continue
 		}
 
-		line := makeLine(l)
+		if strings.HasPrefix(l, "```") {
+			multiLineCode = !multiLineCode
+			continue
+		}
+
+		if multiLineCode {
+			line = makeInvisibleLine(l)
+		} else {
+			line = makeLine(l)
+		}
 		card.Lines = append(card.Lines, line)
 	}
 
@@ -137,6 +149,17 @@ func makeLine(content string) Line {
 	return Line{
 		Original: content,
 		Parts:    lineParts,
+	}
+}
+
+func makeInvisibleLine(content string) Line {
+	part := LinePart{
+		Content: content,
+		Visible: false,
+	}
+	return Line{
+		Original: content,
+		Parts:    []LinePart{part},
 	}
 }
 
