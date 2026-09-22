@@ -1,8 +1,11 @@
 package main
 
 import (
+	"bufio"
 	_ "embed"
 	"fmt"
+	"os"
+	"strings"
 
 	"com.github.yzh44yzh/canon_d"
 )
@@ -23,32 +26,36 @@ const (
 	White   = "\033[97m"
 )
 
+var reader = bufio.NewReaderSize(os.Stdin, 1<<20)
+
 func main() {
 	deck := canon_d.MakeDeck("Example", exampleDeck)
 	total := len(deck.Cards)
-	fmt.Printf("Deck %s\"%s\"%s, %d cards\n", Blue, deck.Header, Reset, total)
-
-	var input string
-	fmt.Scanln(&input)
-	clearScreen()
+	fmt.Printf("\nDeck %s\"%s\"%s, %d cards\n\n", Blue, deck.Header, Reset, total)
 
 	for i, card := range deck.Cards {
-		learnCard(card, i+1, total)
+		typeCard(card, i+1, total)
+		// learnCard(card, i+1, total)
 	}
 
 	fmt.Printf("%sResults:%s\ntodo\n", Blue, Reset)
 }
 
-func learnCard(card canon_d.Card, idx, total int) {
+func typeCard(card canon_d.Card, idx, total int) {
 	fmt.Printf("%sCard %d/%d%s\n", Yellow, idx, total, Reset)
 	fmt.Println(Blue + card.Header.Show() + Reset)
-	for _, line := range card.Lines {
-		fmt.Println(line.Show())
-	}
 
-	var input string
-	fmt.Scanln(&input)
-	clearScreen()
+	for _, line := range card.Lines {
+		fmt.Printf("  %s\n> ", line.Original)
+		input, _ := reader.ReadString('\n')
+
+		if strings.TrimSpace(input) == strings.TrimSpace(line.Original) {
+			fmt.Println(Green + "  OK" + Reset)
+		} else {
+			fmt.Println(Red + "  Error" + Reset)
+		}
+	}
+	fmt.Println("")
 }
 
 func clearScreen() {
