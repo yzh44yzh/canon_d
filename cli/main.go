@@ -36,8 +36,8 @@ func main() {
 	numErrors := 0
 
 	for i, card := range deck.Cards {
-		numErrors += typeCard(card, i+1, total)
-		// learnCard(card, i+1, total)
+		// numErrors += typeCard(card, i+1, total)
+		numErrors += learnCard(card, i+1, total)
 	}
 
 	fmt.Printf("%sResults:%s\n  Errors: %d\n", Blue, Reset, numErrors)
@@ -61,6 +61,33 @@ func typeCard(card canon_d.Card, idx, total int) int {
 	}
 	fmt.Println("")
 
+	return numErrors
+}
+
+func learnCard(card canon_d.Card, idx, total int) int {
+	fmt.Printf("%sCard %d/%d%s\n", Yellow, idx, total, Reset)
+	fmt.Println(Blue + card.Header.Show() + Reset)
+
+	numErrors := 0
+	for _, line := range card.Lines {
+		for _, part := range line.Parts {
+			if part.Visible {
+				fmt.Println(part.Content)
+			} else {
+				fmt.Print("> ")
+				input, _ := reader.ReadString('\n')
+
+				if strings.TrimSpace(input) == strings.TrimSpace(part.Content) {
+					fmt.Println(Green + "  OK" + Reset)
+				} else {
+					numErrors += 1
+					fmt.Println(Red + "  Error" + Reset)
+					fmt.Println(" ", part.Content)
+				}
+			}
+		}
+	}
+	_, _ = reader.ReadString('\n')
 	return numErrors
 }
 

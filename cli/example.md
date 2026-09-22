@@ -81,7 +81,7 @@ group by uid
 Семейство движков `MergeTree` позволяют схлопывать данные в фоновом режиме.
 
 Их 7 штук, из них 3 позволяют реализовать update:
-- `ReplacingMergeTree`
-- `CollapsingMergeTree`
-- `VersionedCollapsingMergeTree`
+`ReplacingMergeTree`
+`CollapsingMergeTree`
+`VersionedCollapsingMergeTree`
 
