@@ -33,13 +33,39 @@ Having a car does not replace going for a run. Having movers does not replace go
 
 ## Usage
 
+Build both binaries with Go 1.25 or later:
+
+```sh
+make compile
+```
+
+The original CLI presents each part of a card in sequence:
+
 ```
 $ ./canon_d --deck ./decks/network.md
 ```
 
+The TUI displays the whole card, with numbered placeholders for hidden answers:
+
+```sh
+./canon_d_tui --deck ./decks/network.md --limit 10
+# Or build and run the TUI with the Go deck:
+make run-tui
+```
+
+Both interfaces shuffle the initial deck and default to 10 cards. The TUI uses all available cards if the limit is larger than the deck, and rejects nonpositive limits and empty decks. For the CLI, choose a positive limit no larger than the card count.
+
+In the TUI, type each missing answer in the single input field and press Enter. Answers are case-sensitive; leading and trailing whitespace is ignored. The expected answer is revealed after submission, with correct or incorrect feedback. Press Enter again to continue. Reading cards without hidden text need only Enter.
+
+Use Page Up/Page Down to scroll and Ctrl+C to quit. The view wraps long lines, follows the active blank, and adjusts when the terminal is resized. Use a terminal at least 20 columns wide and 10 rows high. At the end, use the arrow keys and Enter to repeat missed cards in a newly shuffled order or quit.
+
 Flashcards are ordinary Markdown files. See [decks/network.md](./decks/network.md).
 
 You can and should create your own flashcards to suit your needs.
+
+Headings establish the card hierarchy. Inline backticks mark hidden answers, and each nonempty line in a fenced code block is a separate answer. The TUI's separate parser mode preserves indentation, blank lines, backticks, and code fences; backticks are hidden in the TUI display. Blank code lines need no answer. The original CLI keeps its compact formatting.
+
+Entry points are `cmd/cli/main.go` and `cmd/tui/main.go`. Run `make test` for tests and `go vet`.
 
 
 ## Future Plans
