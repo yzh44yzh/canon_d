@@ -6,15 +6,6 @@ import (
 	"strings"
 )
 
-// **bold text**, but __bold text__ is not supported
-var reBold *regexp.Regexp = regexp.MustCompile(`\*\*(\S.*?)\*\*`)
-
-// _italic text_, but *italic text* is not supported
-var reItalic *regexp.Regexp = regexp.MustCompile(`\_(\S.*?)\_`)
-
-// `inline code`
-var reCode *regexp.Regexp = regexp.MustCompile("`(\\S.*?)`")
-
 func MakeDeck(header, content string) Deck {
 	var currHeader *CardHeader = nil
 	cards := []Card{}
@@ -163,42 +154,16 @@ func makeInvisibleLine(content string) Line {
 	}
 }
 
+// `inline code`
+var reCode *regexp.Regexp = regexp.MustCompile("`(\\S.*?)`")
+
 func findPart(content string) (before, part, after string, found bool) {
-	var minIdx []int = nil
-	cut := 0
+	idx := reCode.FindStringIndex(content)
+	if idx != nil {
+		f := idx[0]
+		t := idx[1]
+		return content[:f], content[f+1 : t-1], content[t:], true
+	} 
 
-	idxB := reBold.FindStringIndex(content)
-	if idxB != nil {
-		minIdx = idxB
-		cut = 2
-	}
-
-	idxI := reItalic.FindStringIndex(content)
-	switch {
-	case idxI != nil && minIdx == nil:
-		minIdx = idxI
-		cut = 1
-	case idxI != nil && idxI[0] < minIdx[0]:
-		minIdx = idxI
-		cut = 1
-	}
-
-	idxC := reCode.FindStringIndex(content)
-	switch {
-	case idxC != nil && minIdx == nil:
-		minIdx = idxC
-		cut = 1
-	case idxC != nil && idxC[0] < minIdx[0]:
-		minIdx = idxC
-		cut = 1
-	}
-
-	if minIdx == nil {
-		return "", "", "", false
-	}
-
-	f := minIdx[0]
-	t := minIdx[1]
-
-	return content[:f], content[f+cut : t-cut], content[t:], true
+	return "", "", "", false
 }

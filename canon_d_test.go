@@ -190,14 +190,14 @@ func TestMakeLine(t *testing.T) {
 		{in: "a `b` c `d`", out: "a ??? c ???"},
 		{in: "`b`", out: "???"},
 		{in: "aa `bb` cc", out: "aa ??? cc"},
-		{in: "aa **bb** cc", out: "aa ??? cc"},
-		{in: "aaa **bbb** ccc **ddd** eee", out: "aaa ??? ccc ??? eee"},
-		{in: "**b** c `d` e", out: "??? c ??? e"},
-		{in: "ha **he** hoo", out: "ha ??? hoo"},
-		{in: "a `b` c **d**", out: "a ??? c ???"},
-		{in: "**b**", out: "???"},
+		{in: "aa **bb** cc", out: "aa **bb** cc"},
+		{in: "aaa **bbb** ccc **ddd** eee", out: "aaa **bbb** ccc **ddd** eee"},
+		{in: "**b** c `d` e", out: "**b** c ??? e"},
+		{in: "ha **he** hoo", out: "ha **he** hoo"},
+		{in: "a `b` c **d**", out: "a ??? c **d**"},
+		{in: "**b**", out: "**b**"},
 		{in: "a *b* c *d*", out: "a *b* c *d*"},
-		{in: "**b** c _d_ e", out: "??? c ??? e"},
+		{in: "**b** c _d_ e", out: "**b** c _d_ e"},
 	}
 
 	for i, set := range sets {
@@ -236,16 +236,16 @@ func TestFindPart(t *testing.T) {
 		{
 			content: "**aaa** bbb",
 			before:  "",
-			part:    "aaa",
-			after:   " bbb",
-			found:   true,
+			part:    "",
+			after:   "",
+			found:   false,
 		},
 		{
 			content: "aaa **bbb**",
-			before:  "aaa ",
-			part:    "bbb",
+			before:  "",
+			part:    "",
 			after:   "",
-			found:   true,
+			found:   false,
 		},
 		{
 			content: "`aaa` bbb ccc",
@@ -256,10 +256,10 @@ func TestFindPart(t *testing.T) {
 		},
 		{
 			content: "aaa _bbb_ ccc",
-			before:  "aaa ",
-			part:    "bbb",
-			after:   " ccc",
-			found:   true,
+			before:  "",
+			part:    "",
+			after:   "",
+			found:   false,
 		},
 		{
 			content: "`aaa` _bbb_ **ccc**",
@@ -270,9 +270,9 @@ func TestFindPart(t *testing.T) {
 		},
 		{
 			content: "aaa **bbb** `ccc`",
-			before:  "aaa ",
-			part:    "bbb",
-			after:   " `ccc`",
+			before:  "aaa **bbb** ",
+			part:    "ccc",
+			after:   "",
 			found:   true,
 		},
 	}
