@@ -34,31 +34,10 @@ IDE и ИИ не отменяют необходимость тренирова�
 ## Использование
 
 ```
-$ ./canon_d --mode=by_heart --limit=10 ./decks/elixir-enum.md 
-Learn deck "elixir-enum", mode: by_heart, limit: 10
-1/10 | Enum.count*
-> Enum.count/1
-> Enum.count/2
-> Enum.count_until/2
-> Enum.count_until/3
-> 
-Correct
-2/10 | Enum.empty?
-> @spec empty?(t()) :: boolean()
-> 
-Correct
-3/10 | Enum.find*
-> Enum.find/3
-> Enum.find_index/3
->  
-Incorrect
-Correct Answer:
-  Enum.find/3
-  Enum.find_index/2
-  Enum.find_value/2
+$ ./canon_d --limit=10 ./decks/golang.md 
 ```
 
-Карточки для изучения -- обычные markdown файлы. См [decks/elixir-enum.md](./decks/elixir-enum.md).
+Карточки для изучения -- обычные markdown файлы. См [decks/golang.md](./decks/golang.md).
 
 Можно и нужно делать свои карточки под себя.
 
