@@ -2,16 +2,14 @@ package main
 
 import (
 	"bufio"
-	_ "embed"
+	"flag"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"com.github.yzh44yzh/canon_d/internal"
 )
-
-//go:embed example.md
-var exampleDeck string
 
 // https://en.wikipedia.org/wiki/ANSI_escape_code
 const (
@@ -29,7 +27,17 @@ const (
 var reader = bufio.NewReaderSize(os.Stdin, 1<<20)
 
 func main() {
-	deck := internal.MakeDeck("Example", exampleDeck)
+	var deckFile string
+	flag.StringVar(&deckFile, "deck", "", "Path to deck file")
+	flag.Parse()
+
+	content, err := os.ReadFile(deckFile)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	deck := internal.MakeDeck(filepath.Base(deckFile), string(content))
 	total := len(deck.Cards)
 	fmt.Printf("\nDeck %s\"%s\"%s, %d cards\n\n", Blue, deck.Header, Reset, total)
 

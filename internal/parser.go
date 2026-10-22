@@ -163,7 +163,7 @@ func findPart(content string) (before, part, after string, found bool) {
 		f := idx[0]
 		t := idx[1]
 		return content[:f], content[f+1 : t-1], content[t:], true
-	} 
+	}
 
 	return "", "", "", false
 }
