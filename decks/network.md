@@ -1,64 +1,64 @@
 # Network
 
 ## OSI
-Open System Interconnection
+`Open System Interconnection`
 
 ## ISP
-Internet Service Provider
+`Internet Service Provider`
 
 ## NAT
-Network Address Translation
+`Network Address Translation`
 
 ## MAC
-Media Access Control
+`Media Access Control`
 
 ## NIC
-Network Interface Card
+`Network Interface Card`
 
 ## FDDI
-Fiber Distributed Data Interface
+`Fiber Distributed Data Interface`
 
 ## TCP
-Transmission Control Protocol
+`Transmission Control Protocol`
 
 ## FCS
-Frame Check Sequence
+`Frame Check Sequence`
 
 ## DNS
-Domain Name System
+`Domain Name System`
 
 ## FQDN
-Fully Qualified Domain Name
+`Fully Qualified Domain Name`
 
 ## BIND
-Berkeley Internet Name Daemon
+`Berkeley Internet Name Daemon`
 
 ## ICMP
-Internet Control Message Protocol
+`Internet Control Message Protocol`
 
 ## MTU
-Maximum Transmission Unit
+`Maximum Transmission Unit`
 
 ## Wi-Fi
-Wireless Fidelity
+`Wireless Fidelity`
 
 ## ARP
-Address Resolution Protocol
+`Address Resolution Protocol`
 
 ## UDP
-User Datagram Protocol
+`User Datagram Protocol`
 
 ## CWND
-Congestion Window
+`Congestion Window`
 
 ## Стандарт Ethernet
-IEEE 802.3
+`IEEE 802.3`
 
 ## Стандарт Wi-Fi
-IEEE 802.11
+`IEEE 802.11`
 
 ## GRE
-Generic Routing Encapsulation
+`Generic Routing Encapsulation`
 
 ## DHCP
-Dynamic Host Configuration Protocol 
+`Dynamic Host Configuration Protocol `

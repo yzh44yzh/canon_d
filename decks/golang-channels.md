@@ -1,24 +1,21 @@
 ### sync go-routines
-```
-var waitGroup sync.WaitGroup
+var waitGroup `sync.WaitGroup`
 
 func main() {
 	for i := 0; i < 10; i++ {
-		waitGroup.Add(1)
+		`waitGroup.Add(1)`
 		go actor(i)
 	}
-	waitGroup.Wait()
+	`waitGroup.Wait()`
 }
 	
 func actor(id int) {
-	defer waitGroup.Done()
+	defer `waitGroup.Done()`
 	fmt.Println("actor", id)
 }
-```
 	
 ### channels
-```
-var ch = make(chan int)
+var ch = `make(chan int)`
 
 func main() {
 	for i := 0; i < 10; i++ {
@@ -26,7 +23,7 @@ func main() {
 	}
 	
 	for i := 0; i < 10; i++ {
-		val := <- ch
+		`val := <- ch`
 		fmt.Println(val)
 	}
 	close(ch)
@@ -34,26 +31,21 @@ func main() {
 		
 func actor(id int) {
 	fmt.Println("actor", id)
-	ch <- id
+	`ch <- id`
 }
-```
 
 ### channel direction
-```
-func MyFun(read_from_ch <-chan int, write_to_ch chan<- int) {
-	val1 := <- read_from_ch
-	write_to_ch <- 42
+func MyFun(read_from_ch `<-chan int`, write_to_ch `chan<- int`) {
+	val1 := `<- read_from_ch`
+	write_to_ch `<- 42`
 }
-```
 
 ### select
-```
 select {
-	case res1 := <- ch1:
+	case `res1 := <- ch1`:
 		fmt.Println("result from ch1", res1)
-	case res2 := <- ch2:
+	case `res2 := <- ch2`:
 		fmt.Println("result from ch2", res2)
-	case <- time.After(2 * time.Second):
+	case `<- time.After(2 * time.Second)`:
 		fmt.Println("timeout")
 }
-```
