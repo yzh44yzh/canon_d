@@ -4,9 +4,11 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
+	"math/rand"
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"com.github.yzh44yzh/canon_d/internal"
 )
@@ -28,7 +30,9 @@ var reader = bufio.NewReaderSize(os.Stdin, 1<<20)
 
 func main() {
 	var deckFile string
+	var limit int
 	flag.StringVar(&deckFile, "deck", "", "Path to deck file")
+	flag.IntVar(&limit, "limit", 10, "Limit the number of cards to learn")
 	flag.Parse()
 
 	content, err := os.ReadFile(deckFile)
@@ -37,9 +41,17 @@ func main() {
 		os.Exit(1)
 	}
 
+	// TODO validate limit > 0
+
 	deck := internal.MakeDeck(filepath.Base(deckFile), string(content))
-	total := len(deck.Cards)
+	total := min(limit, len(deck.Cards))
 	fmt.Printf("\nDeck %s\"%s\"%s, %d cards\n\n", Blue, deck.Header, Reset, total)
+
+	rand.Seed(time.Now().UnixNano())
+	rand.Shuffle(len(deck.Cards), func(i, j int) {
+		deck.Cards[i], deck.Cards[j] = deck.Cards[j], deck.Cards[i]
+	})
+	deck.Cards = deck.Cards[:limit]
 
 	numErrors := 0
 
