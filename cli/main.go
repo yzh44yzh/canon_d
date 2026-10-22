@@ -44,22 +44,41 @@ func main() {
 	// TODO validate limit > 0
 
 	deck := internal.MakeDeck(filepath.Base(deckFile), string(content))
-	total := min(limit, len(deck.Cards))
-	fmt.Printf("\nDeck %s\"%s\"%s, %d cards\n\n", Blue, deck.Header, Reset, total)
-
 	rand.Seed(time.Now().UnixNano())
 	rand.Shuffle(len(deck.Cards), func(i, j int) {
 		deck.Cards[i], deck.Cards[j] = deck.Cards[j], deck.Cards[i]
 	})
 	deck.Cards = deck.Cards[:limit]
 
-	numErrors := 0
+	learnDeck(deck)
+}
+
+func learnDeck(deck internal.Deck) {
+	total := len(deck.Cards)
+	fmt.Printf("\nDeck %s\"%s\"%s, %d cards\n\n", Blue, deck.Header, Reset, total)
+
+	cardsToRepeat := []internal.Card{}
 
 	for i, card := range deck.Cards {
-		numErrors += learnCard(card, i+1, total)
+		numErrors := learnCard(card, i+1, total)
+		if numErrors > 0 {
+			cardsToRepeat = append(cardsToRepeat, card)
+		}
 	}
+	numErrors := len(cardsToRepeat)
 
 	fmt.Printf("%sResults:%s\n  Errors: %d\n", Blue, Reset, numErrors)
+
+	if numErrors > 0 {
+		fmt.Printf("%sRepeat errors? Y/N%s\n> ", Blue, Reset)
+		answer, _ := reader.ReadString('\n')
+		answer = strings.TrimSpace(answer)
+
+		if answer == "Y" || answer == "y" {
+			deck.Cards = cardsToRepeat
+			learnDeck(deck)
+		}
+	}
 }
 
 func learnCard(card internal.Card, idx, total int) int {
