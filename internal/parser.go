@@ -1,4 +1,4 @@
-package canon_d
+package internal
 
 import (
 	"errors"

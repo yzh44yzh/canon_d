@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	"com.github.yzh44yzh/canon_d"
+	"com.github.yzh44yzh/canon_d/internal"
 )
 
 //go:embed example.md
@@ -29,7 +29,7 @@ const (
 var reader = bufio.NewReaderSize(os.Stdin, 1<<20)
 
 func main() {
-	deck := canon_d.MakeDeck("Example", exampleDeck)
+	deck := internal.MakeDeck("Example", exampleDeck)
 	total := len(deck.Cards)
 	fmt.Printf("\nDeck %s\"%s\"%s, %d cards\n\n", Blue, deck.Header, Reset, total)
 
@@ -42,7 +42,7 @@ func main() {
 	fmt.Printf("%sResults:%s\n  Errors: %d\n", Blue, Reset, numErrors)
 }
 
-func learnCard(card canon_d.Card, idx, total int) int {
+func learnCard(card internal.Card, idx, total int) int {
 	fmt.Printf("%sCard %d/%d%s\n", Yellow, idx, total, Reset)
 	fmt.Println(Blue + card.Header.Show() + Reset)
 

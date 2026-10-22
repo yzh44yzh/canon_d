@@ -1,3 +1,7 @@
+# Golang
+
+## Channels
+
 ### sync go-routines
 var waitGroup `sync.WaitGroup`
 
