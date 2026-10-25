@@ -62,7 +62,7 @@ writer.`WriteString(strconv.Itoa(res))`
 writer.`WriteByte('\n')`
 
 ## Append to file
-f, err1 := os.`OpenFile("/tmp/f.txt", os.O_APPEND | os.O_CREATE | os.O_WRONLY, 0o644)`
+f, err1 := os.`OpenFile`("/tmp/f.txt", `os.O_APPEND | os.O_CREATE | os.O_WRONLY`, 0o644)
 defer f.Close()
 
 n, err2 := f.Write(`[]byte("some data")`)
@@ -81,3 +81,74 @@ fmt.Errorf("`%d` isn't an even number", i)
 ## string length
 import `"unicode/utf8"`
 utf8.`RuneCountInString(str)`
+
+## go test
+go test `-v ./...`
+
+## new project
+mkdir project_name
+cd project_name
+go `mod init com.github.author/project_name`
+`git init`
+
+## type switch
+type A struct {
+	F int
+}
+type B struct {
+	F string
+}
+
+func check(`v interface{}`) bool {
+	switch `v2 = v.(type)` {
+		case A:
+			return true
+		case B:
+			return true
+		default:
+			return false
+	}
+}
+
+## non-comparable types
+- `map`
+- `slice`
+- `function`
+- `channel`
+
+## define type
+type Score int
+type Converter func`(string)Score`
+type TeamScores map`[string]Score`
+
+## type assertion
+var x interface{} = 7
+i := `x.(int)` // i has type int and value 7
+v1, ok1 := `x.(int)` // 7, true
+v2, ok2 := `x.(float64)` // 0, false
+
+## method
+type Person struct {
+	FirstName string
+	LastName string
+	Age int
+}
+
+func `(p Person) String() string` {
+	return fmt.Sprintf("%s %s, age %d", p.FirstName, p.LastName, p.Age)
+}
+
+bob := Person{"Bob", "Bobov", 18)
+output := bob.String()
+
+## string interpolation
+msg := `fmt.Sprintf`("Hello, `%s`!", name)
+
+## strings builder 
+var builder `strings.Builder`
+builder.`WriteString`("Hello")
+builder.`WriteByte`(' ')
+builder.`WriteRune`('世')
+result := builder.`String`()
+fmt.Println(result) 
+
