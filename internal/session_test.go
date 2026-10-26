@@ -7,7 +7,7 @@ import (
 )
 
 func TestSessionAnswersAndFeedback(t *testing.T) {
-	deck := MakeDeckWithMode("test", "# Card\n`TCP` then `DNS`\n", PreserveFormatting)
+	deck := MakeDeck("test", "# Card\n`TCP` then `DNS`\n")
 	s, err := NewSession(deck, 10)
 	if err != nil {
 		t.Fatal(err)
@@ -59,7 +59,7 @@ func TestSessionAnswersAndFeedback(t *testing.T) {
 }
 
 func TestSessionReadingAndValidation(t *testing.T) {
-	deck := MakeDeckWithMode("test", "# Read\nVisible text\n", PreserveFormatting)
+	deck := MakeDeck("test", "# Read\nVisible text\n")
 	for _, limit := range []int{0, -1} {
 		if _, err := NewSession(deck, limit); err == nil {
 			t.Errorf("expected invalid limit error for %d", limit)
@@ -86,7 +86,7 @@ func TestSessionReadingAndValidation(t *testing.T) {
 }
 
 func TestRepeatKeepsOnlyMissedOccurrences(t *testing.T) {
-	card := Card{Header: CardHeader{Content: "duplicate"}, Lines: []Line{makeInvisibleLine("answer")}}
+	card := Card{Header: CardHeader{Content: "duplicate"}, Lines: []Line{{Parts: []LinePart{{Content: "answer"}}}}}
 	deck := Deck{Cards: []Card{card, card, card}}
 	before := append([]Card(nil), deck.Cards...)
 	s, err := NewSession(deck, 3)
@@ -113,7 +113,7 @@ func TestRepeatKeepsOnlyMissedOccurrences(t *testing.T) {
 }
 
 func TestSessionShufflesACopyAndLimits(t *testing.T) {
-	deck := MakeDeckWithMode("test", "# A\n`a`\n# B\n`b`\n# C\n`c`\n", PreserveFormatting)
+	deck := MakeDeck("test", "# A\n`a`\n# B\n`b`\n# C\n`c`\n")
 	before := append([]Card(nil), deck.Cards...)
 	s, err := NewSession(deck, 2)
 	if err != nil {

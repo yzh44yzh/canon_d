@@ -31,7 +31,7 @@ func run(deckFile string, limit int) error {
 	if err != nil {
 		return err
 	}
-	deck := internal.MakeDeckWithMode(filepath.Base(deckFile), string(content), internal.PreserveFormatting)
+	deck := internal.MakeDeck(filepath.Base(deckFile), string(content))
 	session, err := internal.NewSession(deck, limit)
 	if err != nil {
 		return err

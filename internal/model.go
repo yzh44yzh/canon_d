@@ -1,9 +1,5 @@
 package internal
 
-import (
-	"strings"
-)
-
 type Deck struct {
 	Header string
 	Cards  []Card
@@ -35,16 +31,4 @@ type Line struct {
 type LinePart struct {
 	Visible bool
 	Content string
-}
-
-func (l Line) Show() string {
-	var res strings.Builder
-	for _, part := range l.Parts {
-		if part.Visible {
-			res.WriteString(part.Content)
-		} else {
-			res.WriteString("???")
-		}
-	}
-	return res.String()
 }

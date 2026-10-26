@@ -1,56 +1,96 @@
 package internal
 
 import (
-	"errors"
 	"regexp"
 	"strings"
 )
 
+// MakeDeck parses Markdown cards while preserving their formatting.
 func MakeDeck(header, content string) Deck {
-	var currHeader *CardHeader = nil
-	cards := []Card{}
-	cardLines := []string{}
-
-	lines := strings.Split(content, "\n")
-	for _, line := range lines {
-		// end of the current card,
-		if strings.HasPrefix(line, "#") {
-			card, err := makeCard(currHeader, cardLines)
-			if err == nil {
-				cards = append(cards, card)
-			}
-			cardLines = cardLines[:0]
-
-			// start for the next card
-			header := makeCardHeader(line)
-			for {
-				if currHeader == nil {
-					currHeader = &header
-					break
-				}
-				if currHeader.Level < header.Level {
-					header.Parent = currHeader
-					currHeader = &header
-					break
-				} else {
-					currHeader = currHeader.Parent
-				}
-			}
-		} else {
-			cardLines = append(cardLines, line)
+	deck := Deck{Header: header}
+	var current *CardHeader
+	var lines []string
+	var fence string
+	finish := func() {
+		if current == nil || strings.TrimSpace(strings.Join(lines, "\n")) == "" {
+			return
 		}
+		deck.Cards = append(deck.Cards, formattedCard(*current, lines))
 	}
+	content = strings.ReplaceAll(content, "\r\n", "\n")
+	for _, line := range strings.Split(strings.TrimSuffix(content, "\n"), "\n") {
+		if fence == "" && strings.HasPrefix(line, "#") {
+			finish()
+			lines = nil
+			h := makeCardHeader(line)
+			for current != nil && current.Level >= h.Level {
+				current = current.Parent
+			}
+			h.Parent = current
+			current = &h
+			continue
+		}
+		lines = append(lines, line)
+		fence = nextFence(line, fence)
+	}
+	finish()
+	return deck
+}
 
-	// last card
-	card, err := makeCard(currHeader, cardLines)
-	if err == nil {
-		cards = append(cards, card)
+// nextFence recognizes backtick and tilde fences, including longer fences that
+// can contain shorter fence markers as answer text.
+func nextFence(line, fence string) string {
+	trimmed := strings.TrimSpace(line)
+	if fence != "" {
+		if len(trimmed) >= len(fence) && strings.Trim(trimmed, fence[:1]) == "" {
+			return ""
+		}
+		return fence
 	}
+	if len(trimmed) < 3 || (trimmed[0] != '`' && trimmed[0] != '~') {
+		return ""
+	}
+	n := 0
+	for n < len(trimmed) && trimmed[n] == trimmed[0] {
+		n++
+	}
+	if n < 3 {
+		return ""
+	}
+	return trimmed[:n]
+}
 
-	return Deck{
-		Header: header,
-		Cards:  cards,
+func formattedCard(header CardHeader, raw []string) Card {
+	card := Card{Header: header}
+	var fence string
+	for _, text := range raw {
+		next := nextFence(text, fence)
+		line := Line{Original: text}
+		switch {
+		case next != fence || strings.TrimSpace(text) == "":
+			line.Parts = []LinePart{{Visible: true, Content: text}}
+		case fence != "":
+			indent := len(text) - len(strings.TrimLeft(text, " \t"))
+			line.Parts = []LinePart{
+				{Visible: true, Content: text[:indent]},
+				{Content: text[indent:]},
+			}
+		default:
+			// Keep the literal backticks surrounding each inline answer.
+			start := 0
+			for _, match := range reCode.FindAllStringIndex(text, -1) {
+				line.Parts = append(line.Parts,
+					LinePart{Visible: true, Content: text[start : match[0]+1]},
+					LinePart{Content: text[match[0]+1 : match[1]-1]},
+				)
+				start = match[1] - 1
+			}
+			line.Parts = append(line.Parts, LinePart{Visible: true, Content: text[start:]})
+		}
+		card.Lines = append(card.Lines, line)
+		fence = next
 	}
+	return card
 }
 
 func makeCardHeader(line string) CardHeader {
@@ -66,104 +106,5 @@ func makeCardHeader(line string) CardHeader {
 	}
 }
 
-func makeCard(header *CardHeader, rawLines []string) (Card, error) {
-	card := Card{}
-
-	if header == nil {
-		return card, errors.New("no header")
-	}
-
-	card.Header = *header
-
-	var multiLineCode bool = false
-	var line Line
-
-	for _, l := range rawLines {
-		l = strings.TrimSpace(l)
-		if l == "" {
-			continue
-		}
-
-		if strings.HasPrefix(l, "```") {
-			multiLineCode = !multiLineCode
-			continue
-		}
-
-		if multiLineCode {
-			line = makeInvisibleLine(l)
-		} else {
-			line = makeLine(l)
-		}
-		card.Lines = append(card.Lines, line)
-	}
-
-	if len(card.Lines) == 0 {
-		return card, errors.New("empty card")
-	}
-	return card, nil
-}
-
-func makeLine(content string) Line {
-	lineParts := []LinePart{}
-	rest := content
-
-	for {
-		before, part, after, found := findPart(rest)
-		if found {
-			if before != "" {
-				beforePart := LinePart{
-					Content: before,
-					Visible: true,
-				}
-				lineParts = append(lineParts, beforePart)
-			}
-
-			currPart := LinePart{
-				Content: part,
-				Visible: false,
-			}
-			lineParts = append(lineParts, currPart)
-
-			rest = after
-		} else {
-			if rest != "" {
-				restPart := LinePart{
-					Content: rest,
-					Visible: true,
-				}
-				lineParts = append(lineParts, restPart)
-			}
-			break
-		}
-	}
-
-	return Line{
-		Original: content,
-		Parts:    lineParts,
-	}
-}
-
-func makeInvisibleLine(content string) Line {
-	part := LinePart{
-		Content: content,
-		Visible: false,
-	}
-	return Line{
-		Original: content,
-		Parts:    []LinePart{part},
-	}
-}
-
 // `inline code`
-var reCode *regexp.Regexp = regexp.MustCompile("`(\\S.*?)`")
-
-func findPart(content string) (before, part, after string, found bool) {
-	idx := reCode.FindStringIndex(content)
-	if idx != nil {
-		f := idx[0]
-		t := idx[1]
-		return content[:f], content[f+1 : t-1], content[t:], true
-	}
-
-	return "", "", "", false
-}
+var reCode = regexp.MustCompile("`(\\S.*?)`")

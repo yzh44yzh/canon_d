@@ -2,121 +2,11 @@ package internal
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
 )
-
-func Test_makeCard(t *testing.T) {
-	header1 := makeCardHeader("# aaa")
-	card1, _ := makeCard(&header1, []string{"`line 1`"})
-
-	expectCard1 := Card{
-		Header: CardHeader{Level: 1, Content: "aaa"},
-		Lines: []Line{
-			Line{
-				Original: "`line 1`",
-				Parts: []LinePart{
-					LinePart{
-						Visible: false,
-						Content: "line 1",
-					},
-				},
-			},
-		},
-	}
-	if diff1 := cmp.Diff(expectCard1, card1); diff1 != "" {
-		t.Error(diff1)
-	}
-
-	header2 := makeCardHeader("## bbb")
-	card2, _ := makeCard(&header2, []string{"aaa `bbb` ccc"})
-
-	expectCard2 := Card{
-		Header: CardHeader{Level: 2, Content: "bbb"},
-		Lines: []Line{
-			Line{
-				Original: "aaa `bbb` ccc",
-				Parts: []LinePart{
-					LinePart{
-						Visible: true,
-						Content: "aaa ",
-					},
-					LinePart{
-						Visible: false,
-						Content: "bbb",
-					},
-					LinePart{
-						Visible: true,
-						Content: " ccc",
-					},
-				},
-			},
-		},
-	}
-	if diff2 := cmp.Diff(expectCard2, card2); diff2 != "" {
-		t.Error(diff2)
-	}
-
-	header3 := makeCardHeader("## ccc")
-	card3, _ := makeCard(&header3, []string{
-		"aaa `bbb`",
-		"```sql",
-		"select * from",
-		"my_table",
-		"```",
-		"ddd",
-	})
-
-	expectCard3 := Card{
-		Header: CardHeader{Level: 2, Content: "ccc"},
-		Lines: []Line{
-			Line{
-				Original: "aaa `bbb`",
-				Parts: []LinePart{
-					LinePart{
-						Visible: true,
-						Content: "aaa ",
-					},
-					LinePart{
-						Visible: false,
-						Content: "bbb",
-					},
-				},
-			},
-			Line{
-				Original: "select * from",
-				Parts: []LinePart{
-					LinePart{
-						Visible: false,
-						Content: "select * from",
-					},
-				},
-			},
-			Line{
-				Original: "my_table",
-				Parts: []LinePart{
-					LinePart{
-						Visible: false,
-						Content: "my_table",
-					},
-				},
-			},
-			Line{
-				Original: "ddd",
-				Parts: []LinePart{
-					LinePart{
-						Visible: true,
-						Content: "ddd",
-					},
-				},
-			},
-		},
-	}
-	if diff3 := cmp.Diff(expectCard3, card3); diff3 != "" {
-		t.Error(diff3)
-	}
-}
 
 func Test_makeCardHeader(t *testing.T) {
 	sets := []struct {
@@ -177,122 +67,64 @@ func TestCardHeaderShow(t *testing.T) {
 	}
 }
 
-func TestMakeLine(t *testing.T) {
-	sets := []struct {
-		in  string
-		out string
-	}{
-		{in: "a a a", out: "a a a"},
-		{in: "a `b` c", out: "a ??? c"},
-		{in: "a `b` c `d` e", out: "a ??? c ??? e"},
-		{in: "`b` c `d` e", out: "??? c ??? e"},
-		{in: "ha `he` hoo", out: "ha ??? hoo"},
-		{in: "a `b` c `d`", out: "a ??? c ???"},
-		{in: "`b`", out: "???"},
-		{in: "aa `bb` cc", out: "aa ??? cc"},
-		{in: "aa **bb** cc", out: "aa **bb** cc"},
-		{in: "aaa **bbb** ccc **ddd** eee", out: "aaa **bbb** ccc **ddd** eee"},
-		{in: "**b** c `d` e", out: "**b** c ??? e"},
-		{in: "ha **he** hoo", out: "ha **he** hoo"},
-		{in: "a `b` c **d**", out: "a ??? c **d**"},
-		{in: "**b**", out: "**b**"},
-		{in: "a *b* c *d*", out: "a *b* c *d*"},
-		{in: "**b** c _d_ e", out: "**b** c _d_ e"},
+func TestPreserveFormatting(t *testing.T) {
+	body := "\n  Before `hidden` and `ещё` **visible**.\n\n```go\n\tfunc main() {\n\n    # code, not a heading\n\t}\n```\n  After.\n"
+	deck := MakeDeck("test", "# Parent\n## Child\n"+body+"\n## Reading\nJust read.\n")
+	if len(deck.Cards) != 2 {
+		t.Fatalf("want 2 cards, got %d", len(deck.Cards))
 	}
+	card := deck.Cards[0]
+	if got := card.Header.Show(); got != "Parent / Child" {
+		t.Errorf("unexpected header: %q", got)
+	}
+	var originals, restored []string
+	var answers []string
+	for _, line := range card.Lines {
+		originals = append(originals, line.Original)
+		var full strings.Builder
+		for _, part := range line.Parts {
+			full.WriteString(part.Content)
+			if !part.Visible {
+				answers = append(answers, part.Content)
+			}
+		}
+		restored = append(restored, full.String())
+	}
+	for name, got := range map[string]string{"original": strings.Join(originals, "\n"), "restored": strings.Join(restored, "\n")} {
+		if diff := cmp.Diff(body, got); diff != "" {
+			t.Errorf("%s formatting (-want +got):\n%s", name, diff)
+		}
+	}
+	wantAnswers := []string{"hidden", "ещё", "func main() {", "# code, not a heading", "}"}
+	if diff := cmp.Diff(wantAnswers, answers); diff != "" {
+		t.Errorf("answers (-want +got):\n%s", diff)
+	}
+}
 
-	for i, set := range sets {
-		name := fmt.Sprintf("set_%d", i)
-		t.Run(name, func(t *testing.T) {
-			line := makeLine(set.in)
-			if line.Show() != set.out {
-				t.Errorf("in: '%v', expect out: '%v', real out: '%v', line: '%v'", set.in, set.out, line.Show(), line)
+func TestFormattedFenceBoundaries(t *testing.T) {
+	for _, fence := range []string{"````", "~~~"} {
+		t.Run(fence, func(t *testing.T) {
+			content := "# One\n" + fence + "text\n# hidden\n```\n" + fence + "\n# Two\nvisible\n"
+			deck := MakeDeck("test", content)
+			if len(deck.Cards) != 2 || len(deck.Cards[0].Lines) != 4 {
+				t.Fatalf("unexpected deck: %+v", deck)
+			}
+			if deck.Cards[0].Lines[1].Parts[1].Content != "# hidden" {
+				t.Fatal("heading inside fence must be a hidden answer")
 			}
 		})
 	}
 }
 
-func TestFindPart(t *testing.T) {
-	sets := []struct {
-		content string
-		before  string
-		part    string
-		after   string
-		found   bool
-	}{
-		{
-			content: "Семейство движков `MergeTree` позволяют",
-			before:  "Семейство движков ",
-			part:    "MergeTree",
-			after:   " позволяют",
-			found:   true,
-		},
-		{
-			content: "Семейство движков MergeTree позволяют",
-			before:  "",
-			part:    "",
-			after:   "",
-			found:   false,
-		},
-		{
-			content: "**aaa** bbb",
-			before:  "",
-			part:    "",
-			after:   "",
-			found:   false,
-		},
-		{
-			content: "aaa **bbb**",
-			before:  "",
-			part:    "",
-			after:   "",
-			found:   false,
-		},
-		{
-			content: "`aaa` bbb ccc",
-			before:  "",
-			part:    "aaa",
-			after:   " bbb ccc",
-			found:   true,
-		},
-		{
-			content: "aaa _bbb_ ccc",
-			before:  "",
-			part:    "",
-			after:   "",
-			found:   false,
-		},
-		{
-			content: "`aaa` _bbb_ **ccc**",
-			before:  "",
-			part:    "aaa",
-			after:   " _bbb_ **ccc**",
-			found:   true,
-		},
-		{
-			content: "aaa **bbb** `ccc`",
-			before:  "aaa **bbb** ",
-			part:    "ccc",
-			after:   "",
-			found:   true,
-		},
+func TestEmptyCardsAndCRLF(t *testing.T) {
+	content := "# Parent\r\n\r\n## Empty\r\n \t\r\n## Card\r\n  `answer`\r\n"
+	deck := MakeDeck("test", content)
+	if len(deck.Cards) != 1 || deck.Cards[0].Lines[0].Original != "  `answer`" {
+		t.Fatalf("empty cards or CRLF not handled: %+v", deck)
 	}
-
-	for i, set := range sets {
-		name := fmt.Sprintf("set_%d", i)
-		t.Run(name, func(t *testing.T) {
-			before, part, after, found := findPart(set.content)
-			if before != set.before {
-				t.Errorf("%d expect before: '%v', real before: '%v'", i, set.before, before)
-			}
-			if part != set.part {
-				t.Errorf("%d expect part: '%v', real part: '%v'", i, set.part, part)
-			}
-			if after != set.after {
-				t.Errorf("%d expect after: '%v', real after: '%v'", i, set.after, after)
-			}
-			if found != set.found {
-				t.Errorf("%d expect found: '%v', real found: '%v'", i, set.found, found)
-			}
-		})
+	for _, input := range []string{"", "# Empty\n\n", "no header\n"} {
+		if got := MakeDeck("test", input); len(got.Cards) != 0 {
+			t.Errorf("want no cards for %q, got %+v", input, got)
+		}
 	}
 }

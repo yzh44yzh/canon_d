@@ -11,7 +11,7 @@ import (
 
 func testModel(t *testing.T, content string) *model {
 	t.Helper()
-	deck := internal.MakeDeckWithMode("test", content, internal.PreserveFormatting)
+	deck := internal.MakeDeck("test", content)
 	session, err := internal.NewSession(deck, 10)
 	if err != nil {
 		t.Fatal(err)

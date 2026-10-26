@@ -2,7 +2,7 @@
 
 ## Project Structure & Module Organization
 
-Canon D is a Go terminal flashcard trainer. Entry points are `cmd/cli/main.go` (CLI) and `cmd/tui/main.go` (TUI). `internal/model.go` defines decks and cards. `internal/parser.go` implements compact parsing; `internal/parser_formatted.go` preserves formatting. `internal/session.go` owns TUI answer checking and shuffled retries. Bubble Tea rendering and input live in `internal/tui/`. Keep domain behavior separate from rendering.
+Canon D is a Go terminal flashcard trainer. The entry point is `cmd/tui/main.go`. `internal/model.go` defines decks and cards. `internal/parser.go` parses Markdown while preserving formatting. `internal/session.go` owns TUI answer checking and shuffled retries. Bubble Tea rendering and input live in `internal/tui/`. Keep domain behavior separate from rendering.
 
 `decks/` contains Markdown learning material. `README.md` and `README.ru.md` provide English and Russian documentation; update both when changing documented behavior.
 
@@ -10,15 +10,14 @@ Canon D is a Go terminal flashcard trainer. Entry points are `cmd/cli/main.go` (
 
 Use Go 1.25.0 or later. Run commands from the repository root:
 
-- `make compile`: build `canon_d` and `canon_d_tui`.
-- `make compile-cli` / `make compile-tui`: build one binary.
-- `make run` / `make run-tui`: build and run the chosen interface with `decks/golang.md`.
+- `make compile`: build `canon_d`.
+- `make run` / `make run-tui`: build and run the TUI with `decks/golang.md`.
 - `make test`: run all Go tests, then `go vet ./...`.
-- `go run ./cmd/tui --deck ./decks/network.md --limit 5`: run the TUI directly; use `./cmd/cli` for the CLI.
-- `go test ./internal -run TestMakeLine -v`: run a focused test.
-- `gofmt -w cmd/cli/*.go cmd/tui/*.go internal/*.go internal/tui/*.go`: format Go source.
+- `go run ./cmd/tui --deck ./decks/network.md --limit 5`: run the TUI directly.
+- `go test ./internal -run TestPreserveFormatting -v`: run a focused test.
+- `gofmt -w cmd/tui/*.go internal/*.go internal/tui/*.go`: format Go source.
 
-The TUI validates limits and empty decks. The CLI requires a positive limit no greater than the card count.
+The TUI validates limits and empty decks.
 
 ## Coding Style & Naming Conventions
 
@@ -26,11 +25,11 @@ Use `gofmt` and tabs. Use MixedCaps for exported identifiers, mixedCaps for unex
 
 ## Testing Guidelines
 
-Use Go's `testing` package and `github.com/google/go-cmp/cmp` for structured comparisons. Place tests in adjacent `*_test.go` files, with `TestXxx` names and table-driven subtests where useful. Cover both parser modes, answer matching, retry rounds, and TUI transitions when changing those behaviors. No coverage threshold is configured. Run `make test` before submitting code changes.
+Use Go's `testing` package and `github.com/google/go-cmp/cmp` for structured comparisons. Place tests in adjacent `*_test.go` files, with `TestXxx` names and table-driven subtests where useful. Cover formatting preservation, answer matching, retry rounds, and TUI transitions when changing those behaviors. No coverage threshold is configured. Run `make test` before submitting code changes.
 
 ## Deck Format
 
-Markdown headings delimit cards and establish their hierarchy. Inline backticks mark hidden answers; nonempty fenced-code lines become individual answers. Empty cards are skipped. Preserve the CLI's compact parser behavior; the TUI mode retains whitespace and fences and treats headings inside fences as code.
+Markdown headings delimit cards and establish their hierarchy. Inline backticks mark hidden answers; nonempty fenced-code lines become individual answers. Empty cards are skipped. The parser retains whitespace and fences and treats headings inside fences as code.
 
 ## Commit & Pull Request Guidelines
 

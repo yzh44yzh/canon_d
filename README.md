@@ -6,7 +6,7 @@
 > Conceptual knowledge is not enough. You need conviction that comes from your own experience.
 > Maxim Dorofeev.
 
-A command-line tool for active [spaced repetition](https://en.wikipedia.org/wiki/Spaced_repetition).
+A terminal tool for active [spaced repetition](https://en.wikipedia.org/wiki/Spaced_repetition).
 
 Most spaced repetition systems use "passive" flashcards. This means you simply read a card and then decide how well you remember the information on it. In fact, you need to make an effort to recall it, and that effort is an essential part of spaced repetition.
 
@@ -33,27 +33,21 @@ Having a car does not replace going for a run. Having movers does not replace go
 
 ## Usage
 
-Build both binaries with Go 1.25 or later:
+Build the TUI with Go 1.25 or later:
 
 ```sh
 make compile
 ```
 
-The original CLI presents each part of a card in sequence:
-
-```
-$ ./canon_d --deck ./decks/network.md
-```
-
 The TUI displays the whole card, with numbered placeholders for hidden answers:
 
 ```sh
-./canon_d_tui --deck ./decks/network.md --limit 10
+./canon_d --deck ./decks/network.md --limit 10
 # Or build and run the TUI with the Go deck:
-make run-tui
+make run
 ```
 
-Both interfaces shuffle the initial deck and default to 10 cards. The TUI uses all available cards if the limit is larger than the deck, and rejects nonpositive limits and empty decks. For the CLI, choose a positive limit no larger than the card count.
+The TUI shuffles the initial deck and defaults to 10 cards. The TUI uses all available cards if the limit is larger than the deck, and rejects nonpositive limits and empty decks.
 
 In the TUI, type each missing answer in the single input field and press Enter. Answers are case-sensitive; leading and trailing whitespace is ignored. The expected answer is revealed after submission, with correct or incorrect feedback. Press Enter again to continue. Reading cards without hidden text need only Enter.
 
@@ -63,9 +57,9 @@ Flashcards are ordinary Markdown files. See [decks/network.md](./decks/network.m
 
 You can and should create your own flashcards to suit your needs.
 
-Headings establish the card hierarchy. Inline backticks mark hidden answers, and each nonempty line in a fenced code block is a separate answer. The TUI's separate parser mode preserves indentation, blank lines, backticks, and code fences; backticks are hidden in the TUI display. Blank code lines need no answer. The original CLI keeps its compact formatting.
+Headings establish the card hierarchy. Inline backticks mark hidden answers, and each nonempty line in a fenced code block is a separate answer. The parser preserves indentation, blank lines, backticks, and code fences; backticks are hidden in the TUI display. Blank code lines need no answer.
 
-Entry points are `cmd/cli/main.go` and `cmd/tui/main.go`. Run `make test` for tests and `go vet`.
+The entry point is `cmd/tui/main.go`. Run `make test` for tests and `go vet`.
 
 
 ## Future Plans
