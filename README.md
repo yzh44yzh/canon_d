@@ -39,7 +39,7 @@ Build the TUI with Go 1.25 or later:
 make compile
 ```
 
-The TUI displays the whole card, with numbered placeholders for hidden answers:
+Run with a deck:
 
 ```sh
 ./canon_d --deck ./decks/network.md --limit 10
@@ -47,25 +47,20 @@ The TUI displays the whole card, with numbered placeholders for hidden answers:
 make run
 ```
 
-The TUI shuffles the initial deck and defaults to 10 cards. The TUI uses all available cards if the limit is larger than the deck, and rejects nonpositive limits and empty decks.
+You can create your own flashcards; see [decks/network.md](./decks/network.md) for an example.
 
-The TUI groups the card and answer area into separate rounded panels, with deck progress above and keyboard hints below. Results and repeat/quit choices appear in a single panel. The default color scheme uses the terminal palette: gray borders and hints, cyan active elements, green correct answers, and red errors. Ordinary text and backgrounds use terminal defaults. Bold, reverse video, underlining, and selection markers also identify states.
+Run `make test` for tests and `go vet`.
 
-In the TUI, type each missing answer in the single input field and press Enter. Answers are case-sensitive; leading and trailing whitespace is ignored. The expected answer is revealed after submission, with correct or incorrect feedback. Press Enter again to continue. Reading cards without hidden text need only Enter.
 
-Use Page Up/Page Down to scroll and Ctrl+C to quit. The view wraps long lines, follows the active blank, and adjusts when the terminal is resized. Use a terminal at least 20 columns wide and 10 rows high. At the end, use the arrow keys and Enter to repeat missed cards in a newly shuffled order or quit.
+## Documentation
 
-Flashcards are ordinary Markdown files. See [decks/network.md](./decks/network.md).
-
-You can and should create your own flashcards to suit your needs.
-
-Headings establish the card hierarchy. Inline backticks mark hidden answers, and each nonempty line in a fenced code block is a separate answer. The parser preserves indentation, blank lines, backticks, and code fences; backticks are hidden in the TUI display. Blank code lines need no answer.
-
-The entry point is `cmd/tui/main.go`. Run `make test` for tests and `go vet`.
+- [Deck and card syntax, parsing](./docs/adr/0001-deck-syntax-and-parsing.md)
+- [User sessions, answer checking, and retries](./docs/adr/0002-user-session.md)
+- [UI layout, controls, and color scheme](./docs/adr/0003-ui-and-color-scheme.md)
 
 
 ## Future Plans
 
-Spaced repetition itself has not been implemented yet, and no information is saved at the end of a session. This will be added later, along with learning progress tracking and reports.
+Planned improvements include spaced repetition scheduling, persistent learning progress, and reports.
 
 There may also be a multi-user web version, a mobile version, and an Obsidian plugin.

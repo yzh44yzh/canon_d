@@ -11,7 +11,7 @@ Canon D is a Go terminal flashcard trainer. The entry point is `cmd/tui/main.go`
 Use Go 1.25.0 or later. Run commands from the repository root:
 
 - `make compile`: build `canon_d`.
-- `make run` / `make run-tui`: build and run the TUI with `decks/golang.md`.
+- `make run`: build and run the TUI with `decks/golang.md`.
 - `make test`: run all Go tests, then `go vet ./...`.
 - `go run ./cmd/tui --deck ./decks/network.md --limit 5`: run the TUI directly.
 - `go test ./internal -run TestPreserveFormatting -v`: run a focused test.
