@@ -106,12 +106,12 @@ func TestActiveAnswerScrollsAndResizes(t *testing.T) {
 		t.Fatalf("active answer should scroll into view:\n%s", m.viewport.View())
 	}
 	m.Update(tea.WindowSizeMsg{Width: 25, Height: 12})
-	if !strings.Contains(ansi.Strip(m.viewport.View()), "[2: ???]") {
+	if !strings.Contains(strings.Join(strings.Fields(ansi.Strip(m.viewport.View())), ""), "[2:???]") {
 		t.Fatalf("wrapped active answer lost after resize:\n%s", m.viewport.View())
 	}
 	m.input.SetValue("last")
 	press(m, tea.KeyEnter)
-	if !strings.Contains(ansi.Strip(m.viewport.View()), "last") {
+	if !strings.Contains(strings.Join(strings.Fields(ansi.Strip(m.viewport.View())), ""), "last") {
 		t.Fatal("revealed answer should remain visible")
 	}
 }
@@ -132,28 +132,42 @@ func TestReadingCardsAndSummaryChoices(t *testing.T) {
 }
 
 func TestViewFitsTerminal(t *testing.T) {
-	for _, width := range []int{20, 40, 80} {
-		m := testModel(t, "# Long title with lots of words\nA visible line with `hidden answer` and some extra long content\n")
-		m.Update(tea.WindowSizeMsg{Width: width, Height: 12})
-		for _, stage := range []string{"input", "feedback", "summary"} {
-			switch stage {
-			case "feedback":
-				m.input.SetValue(strings.Repeat("界", 100))
-				press(m, tea.KeyEnter)
-			case "summary":
-				press(m, tea.KeyEnter)
-			}
-			view := m.View()
-			if !view.AltScreen {
-				t.Fatal("TUI should use alternate screen")
-			}
-			lines := strings.Split(view.Content, "\n")
-			if len(lines) > m.height {
-				t.Errorf("%s: %d rows exceed height %d", stage, len(lines), m.height)
-			}
-			for _, line := range lines {
-				if got := ansi.StringWidth(line); got > width {
-					t.Errorf("%s: line width %d exceeds %d: %q", stage, got, width, line)
+	for _, width := range []int{20, 25, 40, 80} {
+		for _, height := range []int{10, 12, 24} {
+			m := testModel(t, "# Long title with lots of words\nA visible line with `hidden answer` and some extra long content\n")
+			m.Update(tea.WindowSizeMsg{Width: width, Height: height})
+			for _, stage := range []string{"input", "feedback", "summary"} {
+				switch stage {
+				case "feedback":
+					m.input.SetValue(strings.Repeat("界", 100))
+					press(m, tea.KeyEnter)
+				case "summary":
+					press(m, tea.KeyEnter)
+				}
+				view := m.View()
+				if !view.AltScreen {
+					t.Fatal("TUI should use alternate screen")
+				}
+				lines := strings.Split(ansi.Strip(view.Content), "\n")
+				if len(lines) > height {
+					t.Errorf("%s at %dx%d: %d rows exceed height", stage, width, height, len(lines))
+				}
+				for _, line := range lines {
+					if got := ansi.StringWidth(line); got > width {
+						t.Errorf("%s: line width %d exceeds %d: %q", stage, got, width, line)
+					}
+				}
+				panels := 2
+				if stage == "summary" {
+					panels = 1
+				}
+				for _, border := range []string{"╭" + strings.Repeat("─", width-2) + "╮", "╰" + strings.Repeat("─", width-2) + "╯"} {
+					if strings.Count(strings.Join(lines, "\n"), border) != panels {
+						t.Errorf("%s at %dx%d: expected %d complete borders %q:\n%s", stage, width, height, panels, border, view.Content)
+					}
+				}
+				if !strings.Contains(lines[len(lines)-1], "quit") && width >= 80 {
+					t.Errorf("%s: keyboard hints missing below panels", stage)
 				}
 			}
 		}

@@ -13,6 +13,7 @@ import (
 )
 
 var (
+	panelStyle   = lipgloss.NewStyle().Border(lipgloss.RoundedBorder())
 	activeStyle  = lipgloss.NewStyle().Bold(true).Reverse(true)
 	correctStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("2"))
 	wrongStyle   = lipgloss.NewStyle().Foreground(lipgloss.Color("1")).Underline(true)
@@ -114,9 +115,9 @@ func (m *model) updateSummary(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 
 func (m *model) resize(width, height int) {
 	m.width, m.height = width, height
-	m.viewport.SetWidth(max(1, width))
-	m.viewport.SetHeight(max(1, height-7))
-	m.input.SetWidth(max(1, width-3))
+	m.viewport.SetWidth(max(1, width-2))
+	m.viewport.SetHeight(max(1, height-9))
+	m.input.SetWidth(max(1, width-4))
 	m.refreshCard()
 }
 
@@ -124,7 +125,7 @@ func (m *model) refreshCard() {
 	if m.session.Done() {
 		return
 	}
-	content, activeRow := renderCard(m.session, max(1, m.width))
+	content, activeRow := renderCard(m.session, max(1, m.width-2))
 	m.viewport.SetContent(content)
 	if activeRow >= 0 {
 		m.viewport.EnsureVisible(activeRow, 0, 0)
@@ -186,6 +187,16 @@ func displayText(s string) string {
 	}, strings.ReplaceAll(s, "\t", "    "))
 }
 
+// panel fits each row before adding borders so long text cannot wrap the frame.
+func (m *model) panel(content string) string {
+	width := max(1, m.width-2)
+	lines := strings.Split(content, "\n")
+	for i, line := range lines {
+		lines[i] = ansi.Truncate(line, width, "…")
+	}
+	return panelStyle.Width(m.width).Render(strings.Join(lines, "\n"))
+}
+
 func (m *model) View() tea.View {
 	var content string
 	switch {
@@ -203,9 +214,9 @@ func (m *model) View() tea.View {
 				}
 				content += choice + "\n"
 			}
-			content += "↑/↓ choose · Enter select · Ctrl+C quit"
+			content = m.panel(strings.TrimSuffix(content, "\n")) + "\n" + "↑/↓ choose · Enter select · Ctrl+C quit"
 		} else {
-			content += "Enter to quit · Ctrl+C quit"
+			content = m.panel(strings.TrimSuffix(content, "\n")) + "\n" + "Enter to quit · Ctrl+C quit"
 		}
 	default:
 		prompt, status := "Enter to continue", "Reading card"
@@ -220,11 +231,13 @@ func (m *model) View() tea.View {
 				}
 			}
 		}
-		content = fmt.Sprintf("%s\n%s\n\n%s\n\n%s\n%s\n%s",
-			ansi.Truncate(fmt.Sprintf("%s · Card %d/%d", displayText(m.name), m.session.CardIndex()+1, m.session.Total()), m.width, "…"),
-			ansi.Truncate(displayText(m.session.Card().Header.Show()), m.width, "…"),
-			m.viewport.View(), prompt, ansi.Truncate(status, m.width, "…"),
-			ansi.Truncate("PgUp/PgDown scroll · Enter submit/continue · Ctrl+C quit", m.width, "…"))
+		progress := ansi.Truncate(fmt.Sprintf("%s · Card %d/%d", displayText(m.name), m.session.CardIndex()+1, m.session.Total()), m.width, "…")
+		card := m.panel(displayText(m.session.Card().Header.Show()) + "\n" + m.viewport.View())
+		answer := m.panel(prompt + "\n" + status)
+		content = strings.Join([]string{
+			progress, card, answer,
+			"PgUp/PgDown scroll · Enter submit/continue · Ctrl+C quit",
+		}, "\n")
 	}
 	lines := strings.Split(content, "\n")
 	for i, line := range lines {
