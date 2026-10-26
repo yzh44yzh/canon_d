@@ -7,19 +7,12 @@ import (
 	"charm.land/bubbles/v2/textinput"
 	"charm.land/bubbles/v2/viewport"
 	tea "charm.land/bubbletea/v2"
-	"charm.land/lipgloss/v2"
 	"com.github.yzh44yzh/canon_d/internal"
 	"github.com/charmbracelet/x/ansi"
 )
 
-var (
-	panelStyle   = lipgloss.NewStyle().Border(lipgloss.RoundedBorder())
-	activeStyle  = lipgloss.NewStyle().Bold(true).Reverse(true)
-	correctStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("2"))
-	wrongStyle   = lipgloss.NewStyle().Foreground(lipgloss.Color("1")).Underline(true)
-)
-
 type model struct {
+	styles    uiStyles
 	name      string
 	session   *internal.Session
 	input     textinput.Model
@@ -30,15 +23,17 @@ type model struct {
 }
 
 func Run(name string, session *internal.Session) error {
-	_, err := tea.NewProgram(newModel(name, session)).Run()
+	_, err := tea.NewProgram(newModel(name, session, DefaultColorScheme)).Run()
 	return err
 }
 
-func newModel(name string, session *internal.Session) *model {
+func newModel(name string, session *internal.Session, scheme ColorScheme) *model {
+	styles := scheme.styles()
 	input := textinput.New()
+	input.SetStyles(styles.input)
 	input.SetVirtualCursor(true)
 	input.Placeholder = "Type the missing text"
-	m := &model{name: name, session: session, input: input, viewport: viewport.New()}
+	m := &model{styles: styles, name: name, session: session, input: input, viewport: viewport.New()}
 	m.resize(80, 24)
 	return m
 }
@@ -125,7 +120,7 @@ func (m *model) refreshCard() {
 	if m.session.Done() {
 		return
 	}
-	content, activeRow := renderCard(m.session, max(1, m.width-2))
+	content, activeRow := m.renderCard(max(1, m.width-2))
 	m.viewport.SetContent(content)
 	if activeRow >= 0 {
 		m.viewport.EnsureVisible(activeRow, 0, 0)
@@ -133,7 +128,8 @@ func (m *model) refreshCard() {
 }
 
 // renderCard wraps display text only; the session retains the original answers.
-func renderCard(session *internal.Session, width int) (string, int) {
+func (m *model) renderCard(width int) (string, int) {
+	session := m.session
 	var rows []string
 	answer, activeRow := 0, -1
 	for _, line := range session.Card().Lines {
@@ -149,15 +145,15 @@ func renderCard(session *internal.Session, width int) (string, int) {
 				activeLineOffset = strings.Count(ansi.Hardwrap(text.String()+"[", width, true), "\n")
 			}
 			if revealed {
-				style := wrongStyle
+				style := m.styles.incorrect
 				if correct {
-					style = correctStyle
+					style = m.styles.correct
 				}
 				text.WriteString(style.Render(displayText(part.Content)))
 			} else {
 				blank := fmt.Sprintf("[%d: ???]", answer+1)
 				if answer == session.AnswerIndex() {
-					blank = activeStyle.Render(blank)
+					blank = m.styles.active.Render(blank)
 				}
 				text.WriteString(blank)
 			}
@@ -194,7 +190,7 @@ func (m *model) panel(content string) string {
 	for i, line := range lines {
 		lines[i] = ansi.Truncate(line, width, "…")
 	}
-	return panelStyle.Width(m.width).Render(strings.Join(lines, "\n"))
+	return m.styles.panel.Width(m.width).Render(strings.Join(lines, "\n"))
 }
 
 func (m *model) View() tea.View {
@@ -208,26 +204,26 @@ func (m *model) View() tea.View {
 			choices := []string{"Repeat missed", "Quit"}
 			for i, choice := range choices {
 				if i == m.selection {
-					choice = "> " + choice
+					choice = m.styles.active.Render("> " + choice)
 				} else {
 					choice = "  " + choice
 				}
 				content += choice + "\n"
 			}
-			content = m.panel(strings.TrimSuffix(content, "\n")) + "\n" + "↑/↓ choose · Enter select · Ctrl+C quit"
+			content = m.panel(strings.TrimSuffix(content, "\n")) + "\n" + m.styles.muted.Render("↑/↓ choose · Enter select · Ctrl+C quit")
 		} else {
-			content = m.panel(strings.TrimSuffix(content, "\n")) + "\n" + "Enter to quit · Ctrl+C quit"
+			content = m.panel(strings.TrimSuffix(content, "\n")) + "\n" + m.styles.muted.Render("Enter to quit · Ctrl+C quit")
 		}
 	default:
-		prompt, status := "Enter to continue", "Reading card"
+		prompt, status := "Enter to continue", m.styles.muted.Render("Reading card")
 		if m.session.AnswerCount() > 0 {
-			status = fmt.Sprintf("Answer %d/%d", m.session.AnswerIndex()+1, m.session.AnswerCount())
+			status = m.styles.muted.Render(fmt.Sprintf("Answer %d/%d", m.session.AnswerIndex()+1, m.session.AnswerCount()))
 			prompt = m.input.View()
 			if m.session.AwaitingContinue() {
 				prompt = "Enter to continue"
-				status = wrongStyle.Render("Incorrect — expected answer revealed above")
+				status = m.styles.incorrect.Render("Incorrect — expected answer revealed above")
 				if m.session.Correct() {
-					status = correctStyle.Render("Correct")
+					status = m.styles.correct.Render("Correct")
 				}
 			}
 		}
@@ -236,7 +232,7 @@ func (m *model) View() tea.View {
 		answer := m.panel(prompt + "\n" + status)
 		content = strings.Join([]string{
 			progress, card, answer,
-			"PgUp/PgDown scroll · Enter submit/continue · Ctrl+C quit",
+			m.styles.muted.Render("PgUp/PgDown scroll · Enter submit/continue · Ctrl+C quit"),
 		}, "\n")
 	}
 	lines := strings.Split(content, "\n")

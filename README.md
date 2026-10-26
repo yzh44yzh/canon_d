@@ -49,7 +49,7 @@ make run
 
 The TUI shuffles the initial deck and defaults to 10 cards. The TUI uses all available cards if the limit is larger than the deck, and rejects nonpositive limits and empty decks.
 
-The TUI groups the card and answer area into separate rounded panels, with deck progress above and keyboard hints below. Results and repeat/quit choices appear in a single panel.
+The TUI groups the card and answer area into separate rounded panels, with deck progress above and keyboard hints below. Results and repeat/quit choices appear in a single panel. The default color scheme uses the terminal palette: gray borders and hints, cyan active elements, green correct answers, and red errors. Ordinary text and backgrounds use terminal defaults. Bold, reverse video, underlining, and selection markers also identify states.
 
 In the TUI, type each missing answer in the single input field and press Enter. Answers are case-sensitive; leading and trailing whitespace is ignored. The expected answer is revealed after submission, with correct or incorrect feedback. Press Enter again to continue. Reading cards without hidden text need only Enter.
 
