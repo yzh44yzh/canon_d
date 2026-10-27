@@ -15,6 +15,7 @@ func (ch CardHeader) Show() string {
 	if ch.Parent != nil {
 		return ch.Parent.Show() + " / " + ch.Content
 	}
+
 	return ch.Content
 }
 

@@ -23,13 +23,17 @@ func NewSession(deck Deck, limit int) (*Session, error) {
 	if limit <= 0 {
 		return nil, errors.New("limit must be greater than zero")
 	}
+
 	if len(deck.Cards) == 0 {
 		return nil, errors.New("deck contains no cards")
 	}
+
 	cards := append([]Card(nil), deck.Cards...)
 	shuffleCards(cards)
+
 	s := &Session{cards: cards[:min(limit, len(cards))]}
 	s.startCard()
+
 	return s, nil
 }
 
@@ -50,6 +54,7 @@ func (s *Session) AnswerResult(index int) (correct, revealed bool) {
 	if index < 0 || index >= len(s.results) {
 		return false, false
 	}
+
 	return s.results[index], true
 }
 
@@ -57,6 +62,7 @@ func (s *Session) Card() Card {
 	if s.Done() {
 		return Card{}
 	}
+
 	return s.cards[s.cardIndex]
 }
 
@@ -67,6 +73,7 @@ func (s *Session) startCard() {
 	s.awaitingContinue = false
 	s.correct = false
 	s.cardMissed = false
+
 	for _, line := range s.Card().Lines {
 		for _, part := range line.Parts {
 			if !part.Visible {
@@ -80,6 +87,7 @@ func (s *Session) Submit(answer string) {
 	if s.Done() || s.awaitingContinue || len(s.answers) == 0 {
 		return
 	}
+
 	s.correct = strings.TrimSpace(answer) == strings.TrimSpace(s.answers[s.answerIndex])
 	s.results = append(s.results, s.correct)
 	s.cardMissed = s.cardMissed || !s.correct
@@ -91,14 +99,17 @@ func (s *Session) Continue() {
 	if s.Done() || (!s.awaitingContinue && len(s.answers) != 0) {
 		return
 	}
+
 	s.answerIndex++
 	s.awaitingContinue = false
 	if s.answerIndex < len(s.answers) {
 		return
 	}
+
 	if s.cardMissed {
 		s.missed = append(s.missed, s.Card())
 	}
+
 	s.cardIndex++
 	s.startCard()
 }
@@ -108,6 +119,7 @@ func (s *Session) Repeat() {
 	if !s.Done() || len(s.missed) == 0 {
 		return
 	}
+
 	s.cards = s.missed
 	s.missed = nil
 	shuffleCards(s.cards)

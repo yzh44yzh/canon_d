@@ -23,6 +23,9 @@ The TUI validates limits and empty decks.
 
 Use `gofmt` and tabs. Use MixedCaps for exported identifiers, mixedCaps for unexported identifiers, and lowercase package names. Follow existing error-return patterns. The static check is `go vet`; there is no separate linter configuration.
 
+- Code lines must be at most 100 characters.
+- Logical blocks inside functions must be separated by a blank line.
+
 ## Testing Guidelines
 
 Use Go's `testing` package and `github.com/google/go-cmp/cmp` for structured comparisons. Place tests in adjacent `*_test.go` files, with `TestXxx` names and table-driven subtests where useful. Cover formatting preservation, answer matching, retry rounds, and TUI transitions when changing those behaviors. No coverage threshold is configured. Run `make test` before submitting code changes.

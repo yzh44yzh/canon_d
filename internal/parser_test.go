@@ -26,10 +26,13 @@ func Test_makeCardHeader(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			header := makeCardHeader(set.in)
 			if header.Content != set.out {
-				t.Errorf("in: '%v', expect out: '%v', real out: '%v'", set.in, set.out, header.Content)
+				t.Errorf("in: '%v', expect out: '%v', real out: '%v'",
+					set.in, set.out, header.Content)
 			}
+
 			if header.Level != set.level {
-				t.Errorf("in: '%v', expect level: '%v', real level: '%v'", set.in, set.level, header.Level)
+				t.Errorf("in: '%v', expect level: '%v', real level: '%v'",
+					set.in, set.level, header.Level)
 			}
 		})
 	}
@@ -40,11 +43,13 @@ func TestCardHeaderShow(t *testing.T) {
 		Level:   1,
 		Content: "aaa",
 	}
+
 	h2 := CardHeader{
 		Level:   2,
 		Content: "bbb",
 		Parent:  &h1,
 	}
+
 	h3 := CardHeader{
 		Level:   3,
 		Content: "ccc",
@@ -68,33 +73,44 @@ func TestCardHeaderShow(t *testing.T) {
 }
 
 func TestPreserveFormatting(t *testing.T) {
-	body := "\n  Before `hidden` and `ещё` **visible**.\n\n```go\n\tfunc main() {\n\n    # code, not a heading\n\t}\n```\n  After.\n"
+	body := "\n  Before `hidden` and `ещё` **visible**.\n\n" +
+		"```go\n\tfunc main() {\n\n    # code, not a heading\n\t}\n```\n  After.\n"
 	deck := MakeDeck("test", "# Parent\n## Child\n"+body+"\n## Reading\nJust read.\n")
 	if len(deck.Cards) != 2 {
 		t.Fatalf("want 2 cards, got %d", len(deck.Cards))
 	}
+
 	card := deck.Cards[0]
 	if got := card.Header.Show(); got != "Parent / Child" {
 		t.Errorf("unexpected header: %q", got)
 	}
+
 	var originals, restored []string
 	var answers []string
+
 	for _, line := range card.Lines {
 		originals = append(originals, line.Original)
 		var full strings.Builder
+
 		for _, part := range line.Parts {
 			full.WriteString(part.Content)
 			if !part.Visible {
 				answers = append(answers, part.Content)
 			}
 		}
+
 		restored = append(restored, full.String())
 	}
-	for name, got := range map[string]string{"original": strings.Join(originals, "\n"), "restored": strings.Join(restored, "\n")} {
+
+	for name, got := range map[string]string{
+		"original": strings.Join(originals, "\n"),
+		"restored": strings.Join(restored, "\n"),
+	} {
 		if diff := cmp.Diff(body, got); diff != "" {
 			t.Errorf("%s formatting (-want +got):\n%s", name, diff)
 		}
 	}
+
 	wantAnswers := []string{"hidden", "ещё", "func main() {", "# code, not a heading", "}"}
 	if diff := cmp.Diff(wantAnswers, answers); diff != "" {
 		t.Errorf("answers (-want +got):\n%s", diff)
@@ -104,11 +120,13 @@ func TestPreserveFormatting(t *testing.T) {
 func TestFormattedFenceBoundaries(t *testing.T) {
 	for _, fence := range []string{"````", "~~~"} {
 		t.Run(fence, func(t *testing.T) {
-			content := "# One\n" + fence + "text\n# hidden\n```\n" + fence + "\n# Two\nvisible\n"
+			content := "# One\n" + fence + "text\n# hidden\n```\n" +
+				fence + "\n# Two\nvisible\n"
 			deck := MakeDeck("test", content)
 			if len(deck.Cards) != 2 || len(deck.Cards[0].Lines) != 4 {
 				t.Fatalf("unexpected deck: %+v", deck)
 			}
+
 			if deck.Cards[0].Lines[1].Parts[1].Content != "# hidden" {
 				t.Fatal("heading inside fence must be a hidden answer")
 			}
@@ -122,6 +140,7 @@ func TestEmptyCardsAndCRLF(t *testing.T) {
 	if len(deck.Cards) != 1 || deck.Cards[0].Lines[0].Original != "  `answer`" {
 		t.Fatalf("empty cards or CRLF not handled: %+v", deck)
 	}
+
 	for _, input := range []string{"", "# Empty\n\n", "no header\n"} {
 		if got := MakeDeck("test", input); len(got.Cards) != 0 {
 			t.Errorf("want no cards for %q, got %+v", input, got)

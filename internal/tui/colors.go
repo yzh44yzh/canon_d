@@ -44,10 +44,14 @@ func (scheme ColorScheme) styles() uiStyles {
 		Suggestion:  muted,
 		Prompt:      lipgloss.NewStyle().Foreground(scheme.Active),
 	}
+
 	input.Focused, input.Blurred = state, state
 	input.Cursor.Color = scheme.Active
+
 	return uiStyles{
-		panel:     lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).BorderForeground(scheme.Border),
+		panel: lipgloss.NewStyle().
+			Border(lipgloss.RoundedBorder()).
+			BorderForeground(scheme.Border),
 		active:    lipgloss.NewStyle().Foreground(scheme.Active).Bold(true).Reverse(true),
 		muted:     muted,
 		correct:   lipgloss.NewStyle().Foreground(scheme.Correct),
