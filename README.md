@@ -45,6 +45,9 @@ Run with a deck:
 ./canon_d --deck ./decks/golang.md --limit 10
 ```
 
+Use a terminal of at least 20 columns and 11 rows. A horizontal rule separates the fixed card header
+from its scrollable content. Use PgUp/PgDown to scroll.
+
 You can create your own flashcards; see [decks/network.md](./decks/network.md) for an example.
 
 

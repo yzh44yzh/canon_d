@@ -66,7 +66,7 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		}
 
-		if m.width < 20 || m.height < 10 {
+		if m.width < 20 || m.height < 11 {
 			return m, nil
 		}
 
@@ -134,7 +134,7 @@ func (m *model) updateSummary(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 func (m *model) resize(width, height int) {
 	m.width, m.height = width, height
 	m.viewport.SetWidth(max(1, width-2))
-	m.viewport.SetHeight(max(1, height-9))
+	m.viewport.SetHeight(max(1, height-10))
 	m.input.SetWidth(max(1, width-4))
 	m.refreshCard()
 }
@@ -236,12 +236,24 @@ func (m *model) panel(content string) string {
 	return m.styles.panel.Width(m.width).Render(strings.Join(lines, "\n"))
 }
 
+func (m *model) cardPanel() string {
+	border := m.styles.panel.GetBorderStyle()
+	border.BottomLeft, border.BottomRight = "├", "┤"
+	header := ansi.Truncate(
+		displayText(m.session.Card().Header.Show()), max(1, m.width-2), "…",
+	)
+	headerPanel := m.styles.panel.Border(border).Width(m.width).Render(header)
+	contentPanel := m.styles.panel.BorderTop(false).Width(m.width).Render(m.viewport.View())
+
+	return headerPanel + "\n" + contentPanel
+}
+
 func (m *model) View() tea.View {
 	var content string
 
 	switch {
-	case m.width < 20 || m.height < 10:
-		content = "Resize terminal to at least 20×10. Ctrl+C to quit."
+	case m.width < 20 || m.height < 11:
+		content = "Resize terminal to at least 20×11. Ctrl+C to quit."
 	case m.session.Done():
 		content = fmt.Sprintf(
 			"Session complete\n\nCards: %d\nMissed cards: %d\n\n",
@@ -289,9 +301,7 @@ func (m *model) View() tea.View {
 				displayText(m.name), m.session.CardIndex()+1, m.session.Total()),
 			m.width, "…",
 		)
-		card := m.panel(
-			displayText(m.session.Card().Header.Show()) + "\n" + m.viewport.View(),
-		)
+		card := m.cardPanel()
 		answer := m.panel(prompt + "\n" + status)
 
 		content = strings.Join([]string{

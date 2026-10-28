@@ -118,6 +118,44 @@ func TestTypingAndScrollControls(t *testing.T) {
 	}
 }
 
+func TestCardHeaderSeparatorStaysAboveScrollingContent(t *testing.T) {
+	m := testModel(t, "# Parent\n## Card\n"+strings.Repeat("Visible line\n", 40))
+	m.Update(tea.WindowSizeMsg{Width: 40, Height: 12})
+	separator := "├" + strings.Repeat("─", 38) + "┤"
+
+	for _, stage := range []string{"initial", "scrolled"} {
+		if stage == "scrolled" {
+			press(m, tea.KeyPgDown)
+			if m.viewport.YOffset() == 0 {
+				t.Fatal("expected content to scroll")
+			}
+		}
+
+		lines := strings.Split(ansi.Strip(m.View().Content), "\n")
+		if !strings.Contains(lines[2], "Parent / Card") || lines[3] != separator {
+			t.Fatalf("%s: header and separator moved or missing:\n%s",
+				stage, strings.Join(lines, "\n"))
+		}
+
+		if !strings.Contains(lines[4], "Visible line") {
+			t.Fatalf("%s: content missing below separator", stage)
+		}
+	}
+}
+
+func TestTerminalBelowMinimumHeight(t *testing.T) {
+	m := testModel(t, "# Card\n`answer`\n")
+	m.Update(tea.WindowSizeMsg{Width: 80, Height: 10})
+	if !strings.Contains(m.View().Content, "Resize terminal to at least 20×11") {
+		t.Fatal("expected resize message below minimum height")
+	}
+
+	press(m, tea.KeyEnter)
+	if m.session.AwaitingContinue() {
+		t.Fatal("Enter must not submit while the card is hidden")
+	}
+}
+
 func TestActiveAnswerScrollsAndResizes(t *testing.T) {
 	m := testModel(t, "# Card\n`first`\n"+
 		strings.Repeat("Visible line\n", 30)+strings.Repeat("x", 90)+" `last`\n")
@@ -164,7 +202,7 @@ func TestReadingCardsAndSummaryChoices(t *testing.T) {
 
 func TestViewFitsTerminal(t *testing.T) {
 	for _, width := range []int{20, 25, 40, 80} {
-		for _, height := range []int{10, 12, 24} {
+		for _, height := range []int{11, 12, 24} {
 			m := testModel(t, "# Long title with lots of words\n"+
 				"A visible line with `hidden answer` and some extra long content\n")
 			m.Update(tea.WindowSizeMsg{Width: width, Height: height})
