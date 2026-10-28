@@ -5,15 +5,16 @@ import (
 	"testing"
 
 	tea "charm.land/bubbletea/v2"
-	"com.github.yzh44yzh/canon_d/internal"
+	"com.github.yzh44yzh/canon_d/internal/parser"
+	"com.github.yzh44yzh/canon_d/internal/session"
 	"github.com/charmbracelet/x/ansi"
 )
 
 func testModel(t *testing.T, content string) *model {
 	t.Helper()
 
-	deck := internal.MakeDeck("test", content)
-	session, err := internal.NewSession(deck, 10)
+	deck := parser.MakeDeck("test", content)
+	session, err := session.NewSession(deck, 10)
 	if err != nil {
 		t.Fatal(err)
 	}

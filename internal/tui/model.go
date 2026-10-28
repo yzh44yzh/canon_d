@@ -7,14 +7,14 @@ import (
 	"charm.land/bubbles/v2/textinput"
 	"charm.land/bubbles/v2/viewport"
 	tea "charm.land/bubbletea/v2"
-	"com.github.yzh44yzh/canon_d/internal"
+	"com.github.yzh44yzh/canon_d/internal/session"
 	"github.com/charmbracelet/x/ansi"
 )
 
 type model struct {
 	styles    uiStyles
 	name      string
-	session   *internal.Session
+	session   *session.Session
 	input     textinput.Model
 	viewport  viewport.Model
 	width     int
@@ -22,13 +22,13 @@ type model struct {
 	selection int
 }
 
-func Run(name string, session *internal.Session) error {
+func Run(name string, session *session.Session) error {
 	_, err := tea.NewProgram(newModel(name, session, DefaultColorScheme)).Run()
 
 	return err
 }
 
-func newModel(name string, session *internal.Session, scheme ColorScheme) *model {
+func newModel(name string, session *session.Session, scheme ColorScheme) *model {
 	styles := scheme.styles()
 	input := textinput.New()
 	input.SetStyles(styles.input)

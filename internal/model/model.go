@@ -1,4 +1,4 @@
-package internal
+package model
 
 type Deck struct {
 	Header string

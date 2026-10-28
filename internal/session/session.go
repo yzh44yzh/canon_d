@@ -1,14 +1,16 @@
-package internal
+package session
 
 import (
 	"errors"
 	"math/rand/v2"
 	"strings"
+
+	"com.github.yzh44yzh/canon_d/internal/model"
 )
 
 // Session owns a TUI practice round independently of terminal rendering.
 type Session struct {
-	cards            []Card
+	cards            []model.Card
 	cardIndex        int
 	answers          []string
 	answerIndex      int
@@ -16,10 +18,10 @@ type Session struct {
 	correct          bool
 	results          []bool
 	cardMissed       bool
-	missed           []Card
+	missed           []model.Card
 }
 
-func NewSession(deck Deck, limit int) (*Session, error) {
+func NewSession(deck model.Deck, limit int) (*Session, error) {
 	if limit <= 0 {
 		return nil, errors.New("limit must be greater than zero")
 	}
@@ -28,7 +30,7 @@ func NewSession(deck Deck, limit int) (*Session, error) {
 		return nil, errors.New("deck contains no cards")
 	}
 
-	cards := append([]Card(nil), deck.Cards...)
+	cards := append([]model.Card(nil), deck.Cards...)
 	shuffleCards(cards)
 
 	s := &Session{cards: cards[:min(limit, len(cards))]}
@@ -37,7 +39,7 @@ func NewSession(deck Deck, limit int) (*Session, error) {
 	return s, nil
 }
 
-func shuffleCards(cards []Card) {
+func shuffleCards(cards []model.Card) {
 	rand.Shuffle(len(cards), func(i, j int) { cards[i], cards[j] = cards[j], cards[i] })
 }
 
@@ -58,9 +60,9 @@ func (s *Session) AnswerResult(index int) (correct, revealed bool) {
 	return s.results[index], true
 }
 
-func (s *Session) Card() Card {
+func (s *Session) Card() model.Card {
 	if s.Done() {
-		return Card{}
+		return model.Card{}
 	}
 
 	return s.cards[s.cardIndex]

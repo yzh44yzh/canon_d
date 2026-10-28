@@ -1,13 +1,15 @@
-package internal
+package session
 
 import (
 	"testing"
 
+	"com.github.yzh44yzh/canon_d/internal/model"
+	"com.github.yzh44yzh/canon_d/internal/parser"
 	"github.com/google/go-cmp/cmp"
 )
 
 func TestSessionAnswersAndFeedback(t *testing.T) {
-	deck := MakeDeck("test", "# Card\n`TCP` then `DNS`\n")
+	deck := parser.MakeDeck("test", "# Card\n`TCP` then `DNS`\n")
 	s, err := NewSession(deck, 10)
 	if err != nil {
 		t.Fatal(err)
@@ -70,7 +72,7 @@ func TestSessionAnswersAndFeedback(t *testing.T) {
 }
 
 func TestSessionReadingAndValidation(t *testing.T) {
-	deck := MakeDeck("test", "# Read\nVisible text\n")
+	deck := parser.MakeDeck("test", "# Read\nVisible text\n")
 
 	for _, limit := range []int{0, -1} {
 		if _, err := NewSession(deck, limit); err == nil {
@@ -78,7 +80,7 @@ func TestSessionReadingAndValidation(t *testing.T) {
 		}
 	}
 
-	if _, err := NewSession(Deck{}, 10); err == nil {
+	if _, err := NewSession(model.Deck{}, 10); err == nil {
 		t.Fatal("expected empty deck error")
 	}
 
@@ -102,12 +104,12 @@ func TestSessionReadingAndValidation(t *testing.T) {
 }
 
 func TestRepeatKeepsOnlyMissedOccurrences(t *testing.T) {
-	card := Card{
-		Header: CardHeader{Content: "duplicate"},
-		Lines:  []Line{{Parts: []LinePart{{Content: "answer"}}}},
+	card := model.Card{
+		Header: model.CardHeader{Content: "duplicate"},
+		Lines:  []model.Line{{Parts: []model.LinePart{{Content: "answer"}}}},
 	}
-	deck := Deck{Cards: []Card{card, card, card}}
-	before := append([]Card(nil), deck.Cards...)
+	deck := model.Deck{Cards: []model.Card{card, card, card}}
+	before := append([]model.Card(nil), deck.Cards...)
 	s, err := NewSession(deck, 3)
 	if err != nil {
 		t.Fatal(err)
@@ -136,8 +138,8 @@ func TestRepeatKeepsOnlyMissedOccurrences(t *testing.T) {
 }
 
 func TestSessionShufflesACopyAndLimits(t *testing.T) {
-	deck := MakeDeck("test", "# A\n`a`\n# B\n`b`\n# C\n`c`\n")
-	before := append([]Card(nil), deck.Cards...)
+	deck := parser.MakeDeck("test", "# A\n`a`\n# B\n`b`\n# C\n`c`\n")
+	before := append([]model.Card(nil), deck.Cards...)
 	s, err := NewSession(deck, 2)
 	if err != nil {
 		t.Fatal(err)

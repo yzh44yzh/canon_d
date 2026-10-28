@@ -2,7 +2,15 @@
 
 ## Project Structure & Module Organization
 
-Canon D is a Go terminal flashcard trainer. The entry point is `cmd/tui/main.go`. `internal/model.go` defines decks and cards. `internal/parser.go` parses Markdown while preserving formatting. `internal/session.go` owns TUI answer checking and shuffled retries. Bubble Tea rendering and input live in `internal/tui/`. Keep domain behavior separate from rendering.
+Canon D is a Go terminal flashcard trainer. The entry point is `cmd/tui/main.go`.
+Internal packages have distinct responsibilities:
+
+- `internal/model/` defines decks, cards, and their formatting-preserving line structure.
+- `internal/parser/` parses Markdown into model types while preserving formatting.
+- `internal/session/` owns answer checking, practice rounds, and shuffled retries using model types.
+- `internal/tui/` handles Bubble Tea rendering and input using a session.
+
+Keep domain behavior separate from rendering. Parser, session, and TUI tests live beside their packages.
 
 `decks/` contains Markdown learning material. `README.md` and `README.ru.md` provide English and Russian documentation; update both when changing documented behavior.
 
@@ -14,8 +22,8 @@ Use Go 1.25.0 or later. Run commands from the repository root:
 - `make run`: build and run the TUI with `decks/golang.md`.
 - `make test`: run all Go tests, then `go vet ./...`.
 - `go run ./cmd/tui --deck ./decks/network.md --limit 5`: run the TUI directly.
-- `go test ./internal -run TestPreserveFormatting -v`: run a focused test.
-- `gofmt -w cmd/tui/*.go internal/*.go internal/tui/*.go`: format Go source.
+- `go test ./internal/parser -run TestPreserveFormatting -v`: run a focused parser test.
+- `gofmt -w cmd/tui/*.go internal/*/*.go`: format Go source.
 
 The TUI validates limits and empty decks.
 

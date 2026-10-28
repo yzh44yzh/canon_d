@@ -7,7 +7,8 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
-	"com.github.yzh44yzh/canon_d/internal"
+	"com.github.yzh44yzh/canon_d/internal/parser"
+	"com.github.yzh44yzh/canon_d/internal/session"
 	"github.com/charmbracelet/x/ansi"
 )
 
@@ -20,8 +21,8 @@ func TestColorSchemeReachesUI(t *testing.T) {
 		Incorrect: lipgloss.Color("9"),
 	}
 
-	deck := internal.MakeDeck("test", "# Card\n`first` then `second`\n")
-	session, err := internal.NewSession(deck, 10)
+	deck := parser.MakeDeck("test", "# Card\n`first` then `second`\n")
+	session, err := session.NewSession(deck, 10)
 	if err != nil {
 		t.Fatal(err)
 	}

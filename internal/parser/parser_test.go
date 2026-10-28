@@ -1,10 +1,11 @@
-package internal
+package parser
 
 import (
 	"fmt"
 	"strings"
 	"testing"
 
+	"com.github.yzh44yzh/canon_d/internal/model"
 	"github.com/google/go-cmp/cmp"
 )
 
@@ -39,18 +40,18 @@ func Test_makeCardHeader(t *testing.T) {
 }
 
 func TestCardHeaderShow(t *testing.T) {
-	h1 := CardHeader{
+	h1 := model.CardHeader{
 		Level:   1,
 		Content: "aaa",
 	}
 
-	h2 := CardHeader{
+	h2 := model.CardHeader{
 		Level:   2,
 		Content: "bbb",
 		Parent:  &h1,
 	}
 
-	h3 := CardHeader{
+	h3 := model.CardHeader{
 		Level:   3,
 		Content: "ccc",
 		Parent:  &h2,
@@ -75,6 +76,7 @@ func TestCardHeaderShow(t *testing.T) {
 func TestPreserveFormatting(t *testing.T) {
 	body := "\n  Before `hidden` and `ещё` **visible**.\n\n" +
 		"```go\n\tfunc main() {\n\n    # code, not a heading\n\t}\n```\n  After.\n"
+
 	deck := MakeDeck("test", "# Parent\n## Child\n"+body+"\n## Reading\nJust read.\n")
 	if len(deck.Cards) != 2 {
 		t.Fatalf("want 2 cards, got %d", len(deck.Cards))
@@ -122,6 +124,7 @@ func TestFormattedFenceBoundaries(t *testing.T) {
 		t.Run(fence, func(t *testing.T) {
 			content := "# One\n" + fence + "text\n# hidden\n```\n" +
 				fence + "\n# Two\nvisible\n"
+
 			deck := MakeDeck("test", content)
 			if len(deck.Cards) != 2 || len(deck.Cards[0].Lines) != 4 {
 				t.Fatalf("unexpected deck: %+v", deck)
@@ -136,6 +139,7 @@ func TestFormattedFenceBoundaries(t *testing.T) {
 
 func TestEmptyCardsAndCRLF(t *testing.T) {
 	content := "# Parent\r\n\r\n## Empty\r\n \t\r\n## Card\r\n  `answer`\r\n"
+
 	deck := MakeDeck("test", content)
 	if len(deck.Cards) != 1 || deck.Cards[0].Lines[0].Original != "  `answer`" {
 		t.Fatalf("empty cards or CRLF not handled: %+v", deck)
