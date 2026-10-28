@@ -33,7 +33,7 @@ Having a car does not replace going for a run. Having movers does not replace go
 
 ## Usage
 
-Build the TUI with Go 1.25 or later:
+Build with Go 1.25 or later:
 
 ```sh
 make compile
@@ -42,14 +42,10 @@ make compile
 Run with a deck:
 
 ```sh
-./canon_d --deck ./decks/network.md --limit 10
-# Or build and run the TUI with the Go deck:
-make run
+./canon_d --deck ./decks/golang.md --limit 10
 ```
 
 You can create your own flashcards; see [decks/network.md](./decks/network.md) for an example.
-
-Run `make test` for tests and `go vet`.
 
 
 ## Documentation

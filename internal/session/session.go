@@ -30,6 +30,7 @@ func NewSession(deck model.Deck, limit int) (*Session, error) {
 		return nil, errors.New("deck contains no cards")
 	}
 
+	// create a shallow copy of deck.Cards
 	cards := append([]model.Card(nil), deck.Cards...)
 	shuffleCards(cards)
 
@@ -40,7 +41,9 @@ func NewSession(deck model.Deck, limit int) (*Session, error) {
 }
 
 func shuffleCards(cards []model.Card) {
-	rand.Shuffle(len(cards), func(i, j int) { cards[i], cards[j] = cards[j], cards[i] })
+	rand.Shuffle(len(cards), func(i, j int) {
+		cards[i], cards[j] = cards[j], cards[i]
+	})
 }
 
 func (s *Session) Done() bool             { return s.cardIndex == len(s.cards) }
