@@ -42,7 +42,7 @@ This produces two cards, headed `Networking / DNS` and `Networking / Reading`. T
 
 ## Implementation
 
-- [Deck, card, header, and line types](../../internal/model.go)
-- [Parser](../../internal/parser.go)
-- [Parser tests](../../internal/parser_test.go)
+- [Deck, card, header, and line types](../../internal/model/model.go)
+- [Parser](../../internal/parser/parser.go)
+- [Parser tests](../../internal/parser/parser_test.go)
 - [File loading and deck naming](../../cmd/tui/main.go)

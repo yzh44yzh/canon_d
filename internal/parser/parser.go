@@ -102,7 +102,10 @@ func formattedCard(header model.CardHeader, raw []string) model.Card {
 
 			for _, match := range reCode.FindAllStringIndex(text, -1) {
 				line.Parts = append(line.Parts,
-					model.LinePart{Visible: true, Content: text[start : match[0]+1]},
+					model.LinePart{
+						Visible: true,
+						Content: text[start : match[0]+1],
+					},
 					model.LinePart{Content: text[match[0]+1 : match[1]-1]},
 				)
 				start = match[1] - 1

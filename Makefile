@@ -1,4 +1,4 @@
-.PHONY: compile run run-tui test
+.PHONY: compile run check test
 
 compile:
 	go build -o canon_d ./cmd/tui
@@ -6,6 +6,9 @@ compile:
 run: compile
 	./canon_d --deck ./decks/golang.md
 
-test:
+check:
+	go run ./scripts/check
+
+test: check
 	go test ./...
 	go vet ./...

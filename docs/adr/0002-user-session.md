@@ -37,7 +37,7 @@ Session state exists only in memory. There are no accounts, saved results, sched
 
 ## Implementation
 
-- [Session and round transitions](../../internal/session.go)
-- [Answer matching, limits, reading cards, and duplicate occurrence tests](../../internal/session_test.go)
+- [Session and round transitions](../../internal/session/session.go)
+- [Answer matching, limits, reading cards, and duplicate occurrence tests](../../internal/session/session_test.go)
 - [Startup and flags](../../cmd/tui/main.go)
 - [TUI input and summary handling](../../internal/tui/model.go)

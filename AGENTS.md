@@ -12,6 +12,12 @@ Internal packages have distinct responsibilities:
 
 Keep domain behavior separate from rendering. Parser, session, and TUI tests live beside their packages.
 
+When changing parsing, answer handling, or rendering, read the corresponding behavior record:
+
+- [Deck syntax and parsing](docs/adr/0001-deck-syntax-and-parsing.md)
+- [Sessions, answer checking, and retries](docs/adr/0002-user-session.md)
+- [UI layout, controls, and colors](docs/adr/0003-ui-and-color-scheme.md)
+
 `decks/` contains Markdown learning material. `README.md` and `README.ru.md` provide English and Russian documentation; update both when changing documented behavior.
 
 ## Build, Test, and Development Commands
@@ -20,7 +26,8 @@ Use Go 1.25.0 or later. Run commands from the repository root:
 
 - `make compile`: build `canon_d`.
 - `make run`: build and run the TUI with `decks/golang.md`.
-- `make test`: run all Go tests, then `go vet ./...`.
+- `make check`: check Go formatting, 100-column lines, and local documentation links.
+- `make test`: run `make check`, all Go tests, then `go vet ./...`.
 - `go run ./cmd/tui --deck ./decks/network.md --limit 5`: run the TUI directly.
 - `go test ./internal/parser -run TestPreserveFormatting -v`: run a focused parser test.
 - `gofmt -w cmd/tui/*.go internal/*/*.go`: format Go source.
@@ -31,7 +38,7 @@ The TUI validates limits and empty decks.
 
 Use `gofmt` and tabs. Use MixedCaps for exported identifiers, mixedCaps for unexported identifiers, and lowercase package names. Follow existing error-return patterns. The static check is `go vet`; there is no separate linter configuration.
 
-- Code lines must be at most 100 characters.
+- Go code lines, including tests, must be at most 100 columns with eight-column tab stops.
 - Logical blocks inside functions must be separated by a blank line.
 
 ## Testing Guidelines
