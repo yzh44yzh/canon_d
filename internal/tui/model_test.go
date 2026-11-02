@@ -14,7 +14,7 @@ func testModel(t *testing.T, content string) *model {
 	t.Helper()
 
 	deck := parser.MakeDeck("test", content)
-	session, err := session.NewSession(deck, 10)
+	session, err := session.NewSession(deck, 10, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

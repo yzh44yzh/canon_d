@@ -48,6 +48,10 @@ func Open(folder string) (*Store, error) {
 // Close releases the lock. Its file remains in place to keep one shared lock inode.
 func (s *Store) Close() error { return s.lock.Close() }
 
+// InitialStatistics returns a copy of the saved totals loaded when the store opened.
+// It excludes current-run results, even after checkpoints have been saved.
+func (s *Store) InitialStatistics() statistics { return maps.Clone(s.base) }
+
 // Save merges cumulative results from this run with the original stored totals.
 // Repeated saves never add the same submissions or shows twice.
 func (s *Store) Save(results statistics) error {

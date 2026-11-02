@@ -10,7 +10,7 @@ import (
 
 func TestStatisticsTrackAnswersShowsAndRetries(t *testing.T) {
 	deck := parser.MakeDeck("a.md", "# Parent\n## Card\n`one` and `two`")
-	s, err := NewSession(deck, 10)
+	s, err := NewSession(deck, 10, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -51,7 +51,7 @@ func TestStatisticsTrackAnswersShowsAndRetries(t *testing.T) {
 
 func TestDuplicateReadingCardsShareStatistics(t *testing.T) {
 	deck := parser.MakeDeck("read.md", "# Same\nReading\n# Same\nMore reading")
-	s, err := NewSession(deck, 10)
+	s, err := NewSession(deck, 10, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

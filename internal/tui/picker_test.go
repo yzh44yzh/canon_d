@@ -21,7 +21,7 @@ func TestPickerSelectionToMixedPractice(t *testing.T) {
 		{Deck: parser.MakeDeck("empty.md", "# Empty"), Err: fmt.Errorf("no cards")},
 		pickerEntry("b.md"),
 	}
-	m := newSelectionModel(entries, 10, DefaultColorScheme)
+	m := newSelectionModel(entries, 10, nil, DefaultColorScheme)
 	m.Update(tea.WindowSizeMsg{Width: 80, Height: 24})
 	if m.Init() != nil {
 		t.Fatal("selection must not focus the answer input")
@@ -93,7 +93,7 @@ func TestPickerPagingResizeAndSmallTerminal(t *testing.T) {
 		entries = append(entries, pickerEntry(fmt.Sprintf("%02d.md", i)))
 	}
 
-	m := newSelectionModel(entries, 1, DefaultColorScheme)
+	m := newSelectionModel(entries, 1, nil, DefaultColorScheme)
 	m.Update(tea.WindowSizeMsg{Width: 80, Height: 11})
 	press(m, tea.KeyPgDown)
 	if m.picker.cursor != 6 || m.picker.offset == 0 {

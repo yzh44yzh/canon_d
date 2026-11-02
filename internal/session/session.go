@@ -28,12 +28,18 @@ type practiceCard struct {
 	deck string
 }
 
-func NewSession(deck model.Deck, limit int) (*Session, error) {
-	return NewMultiSession([]model.Deck{deck}, limit)
+func NewSession(
+	deck model.Deck, limit int,
+	history map[model.CardIdentity]model.CardStatistics,
+) (*Session, error) {
+	return NewMultiSession([]model.Deck{deck}, limit, history)
 }
 
-// NewMultiSession shuffles all selected cards before applying one global limit.
-func NewMultiSession(decks []model.Deck, limit int) (*Session, error) {
+// NewMultiSession orders selected cards by saved priorities before one global limit.
+func NewMultiSession(
+	decks []model.Deck, limit int,
+	history map[model.CardIdentity]model.CardStatistics,
+) (*Session, error) {
 	if limit <= 0 {
 		return nil, errors.New("limit must be greater than zero")
 	}
@@ -50,7 +56,7 @@ func NewMultiSession(decks []model.Deck, limit int) (*Session, error) {
 		return nil, errors.New("selected decks contain no cards")
 	}
 
-	shuffleCards(cards)
+	weightedShuffle(cards, history, rand.ExpFloat64)
 
 	s := &Session{
 		cards:      cards[:min(limit, len(cards))],

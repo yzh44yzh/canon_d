@@ -22,7 +22,7 @@ func TestColorSchemeReachesUI(t *testing.T) {
 	}
 
 	deck := parser.MakeDeck("test", "# Card\n`first` then `second`\n")
-	session, err := session.NewSession(deck, 10)
+	session, err := session.NewSession(deck, 10, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

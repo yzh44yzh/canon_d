@@ -10,13 +10,19 @@ starts practice directly; a folder run first opens [deck selection](0004-multi-d
 File-reading errors in single-file mode, missing inputs, nonpositive limits, and
 inputs with no usable decks stop startup with an error.
 
-`NewSession` copies the deck's card slice, shuffles the copy, and selects `min(limit, card count)` cards. It does not reorder the source deck. Shuffling uses `math/rand/v2`; an oversized positive limit uses all available cards.
+`NewSession` copies the deck's card occurrences, generates a weighted random order,
+and selects `min(limit, card count)` cards. It does not reorder the source deck.
+Random sampling uses `math/rand/v2`; an oversized positive limit uses all available
+cards in their weighted order.
 
 `NewSession` delegates to `NewMultiSession`, which combines the selected decks into
-card occurrences carrying their source deck names. It shuffles before applying one
+card occurrences carrying their source deck names. It orders them before applying one
 global limit, with no per-deck quota or content deduplication. The source decks are
-not reordered. Source names remain attached through retry rounds, while counters
-and completion totals describe the combined round.
+not reordered. Both constructors accept the saved statistics snapshot; priority is
+defined in the [weighted-selection record](0006-priority-weighted-card-selection.md).
+Missing history and zero answer totals receive new-card priority. Source names
+remain attached through retry rounds, while counters and completion totals describe
+the combined round.
 
 A round tracks its selected cards, current card and answer positions, per-answer results for the current card, whether feedback is awaiting acknowledgement, and completed card occurrences that were missed. Answers are extracted from hidden line parts in line and part order.
 
@@ -52,8 +58,9 @@ cards. The same deck filename and full hierarchical header share totals, even wh
 separate card occurrences have that identity.
 
 The [history store](0005-saved-answer-totals.md) merges these totals with prior runs,
-without changing answer checking, shuffling, limits, or retry selection. Sessions
-contain no file access or terminal rendering. There are no accounts or scheduling
+without changing answer checking, limits, or retry selection. Saved totals also
+inform the initial weighted ordering; current-run results do not alter that order.
+Sessions contain no file access or terminal rendering. There are no accounts or scheduling
 intervals. Terminal input, colors, borders, and scrolling belong to the
 [TUI](0003-ui-and-color-scheme.md).
 
@@ -62,5 +69,6 @@ intervals. Terminal input, colors, borders, and scrolling belong to the
 - [Session and round transitions](../../internal/session/session.go)
 - [Answer matching, limits, reading cards, and duplicate occurrence tests](../../internal/session/session_test.go)
 - [Cumulative show and answer tracking](../../internal/session/statistics.go)
+- [Weighted initial selection](../../internal/session/selection.go)
 - [Startup and flags](../../cmd/tui/main.go)
 - [TUI input and summary handling](../../internal/tui/model.go)

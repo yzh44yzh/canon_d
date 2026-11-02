@@ -49,7 +49,7 @@ func run(deckFile, deckDir string, limit int) error {
 			return err
 		}
 
-		return tui.RunSelection(entries, limit, save)
+		return tui.RunSelection(entries, limit, store.InitialStatistics(), save)
 	}
 
 	entry := decks.LoadFile(deckFile)
@@ -57,7 +57,7 @@ func run(deckFile, deckDir string, limit int) error {
 		return entry.Err
 	}
 
-	session, err := session.NewSession(entry.Deck, limit)
+	session, err := session.NewSession(entry.Deck, limit, store.InitialStatistics())
 	if err != nil {
 		return err
 	}

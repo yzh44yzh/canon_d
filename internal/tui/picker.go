@@ -16,16 +16,26 @@ type deckPicker struct {
 	cursor   int
 	offset   int
 	limit    int
+	history  map[domain.CardIdentity]domain.CardStatistics
 }
 
-func RunSelection(entries []decks.Entry, limit int, save func(*session.Session) error) error {
-	return runModel(newSelectionModel(entries, limit, DefaultColorScheme), save)
+func RunSelection(
+	entries []decks.Entry, limit int,
+	history map[domain.CardIdentity]domain.CardStatistics,
+	save func(*session.Session) error,
+) error {
+	return runModel(newSelectionModel(entries, limit, history, DefaultColorScheme), save)
 }
 
-func newSelectionModel(entries []decks.Entry, limit int, scheme ColorScheme) *model {
+func newSelectionModel(
+	entries []decks.Entry, limit int,
+	history map[domain.CardIdentity]domain.CardStatistics,
+	scheme ColorScheme,
+) *model {
 	m := newModel(nil, scheme)
 	m.picker = &deckPicker{
 		entries: entries, selected: make([]bool, len(entries)), limit: limit,
+		history: history,
 	}
 
 	return m
@@ -81,7 +91,7 @@ func (m *model) updatePicker(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 			return m, nil
 		}
 
-		s, err := session.NewMultiSession(selected, p.limit)
+		s, err := session.NewMultiSession(selected, p.limit, p.history)
 		if err != nil {
 			return m, nil
 		}

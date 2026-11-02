@@ -30,7 +30,7 @@ SQL was first officially adopted as an `ANSI` standard in `1986`.
 - `inconsistencies` after crashes.
 
 ## Redis
-Redis is an acronym that stands for `REmote DIctionary Server`.
+Redis is an acronym that stands for `REmote DIctionary Server`
 
 ### Redis persistence
 The `RDB` (`Redis Database`) persistence performs point-in-time snapshots of your dataset at specified intervals.

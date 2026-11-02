@@ -85,7 +85,7 @@ func TestCompletedAndRetryRoundsSaveOnce(t *testing.T) {
 
 func TestShowWaitsForVisibleCardAndIgnoresRedraws(t *testing.T) {
 	deck := parser.MakeDeck("read.md", "# Read\nReading")
-	s, err := session.NewSession(deck, 1)
+	s, err := session.NewSession(deck, 1, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -111,7 +111,7 @@ func TestShowWaitsForVisibleCardAndIgnoresRedraws(t *testing.T) {
 }
 
 func TestSelectionHasNoShowsBeforePractice(t *testing.T) {
-	m := newSelectionModel([]decks.Entry{pickerEntry("a.md")}, 1, DefaultColorScheme)
+	m := newSelectionModel([]decks.Entry{pickerEntry("a.md")}, 1, nil, DefaultColorScheme)
 	path := connectHistory(t, m)
 	m.Update(tea.WindowSizeMsg{Width: 80, Height: 24})
 	m.Update(tea.KeyPressMsg{Code: 'c', Mod: tea.ModCtrl})

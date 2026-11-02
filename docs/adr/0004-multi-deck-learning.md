@@ -28,10 +28,14 @@ practice.
 
 ## Practice
 
-Combine cards from the selected decks, shuffle the combined collection, and apply
+Combine cards from the selected decks, generate a weighted random order, and apply
 the existing limit once to that collection. The displayed deck name follows the
 current card's source deck. Answer checking, reading cards, and shuffled retry
 rounds retain their current behavior.
+
+The [priority policy](0006-priority-weighted-card-selection.md) uses the saved
+statistics snapshot for the run. The maximum old-card weight is computed only from
+cards in the selected decks; unselected decks and stale history rows do not affect it.
 
 The limit applies globally, without per-deck quotas. A selected deck can therefore
 contribute no cards to the initial round. Card progress and the completion summary

@@ -58,7 +58,8 @@ unreadable decks are disabled with a reason; a folder without usable decks repor
 an error. Card counts and practice use the contents loaded when the screen opens.
 Restart to pick up file changes.
 
-The selected cards are combined and shuffled before applying `--limit` (default 10).
+The selected cards are combined and ordered randomly using saved priorities before
+applying `--limit` (default 10).
 The limit must be positive; an oversized limit uses all available cards. There is no
 per-deck quota, so a selected deck may contribute no cards. The name above each card
 identifies its source deck, including during retries. Completion and retry controls
@@ -89,6 +90,20 @@ the previously saved file. One run at a time may use a deck folder's history.
 The hidden `.canon_d.csv.lock` file remains beside the CSV; its presence does not
 mean a run is active. Both files are ignored by Git in this repository.
 
+Initial selection favors new cards and cards with more errors relative to correct
+answers. An old card's weight is `(incorrect_answers + 1) / (correct_answers + 1)`.
+A card with no history or both answer counters at zero is new; its weight is twice
+the highest old-card weight among eligible cards. If all cards are new, selection
+is uniform. Reading cards keep new-card priority while their answer totals remain
+zero; shows do not affect weight.
+
+Higher weight increases both the chance of selection and the chance of appearing
+earlier. Selection is without replacement: each occurrence appears at most once
+in the initial round. For example, with one new card, one old card, and `--limit 1`,
+the new card has a two-thirds chance of selection. Both startup modes use the saved
+statistics loaded for the run. Retry rounds still shuffle all missed occurrences
+uniformly.
+
 You can create your own flashcards; see [decks/network.md](./decks/network.md) for an example.
 
 
@@ -99,6 +114,7 @@ You can create your own flashcards; see [decks/network.md](./decks/network.md) f
 - [UI layout, controls, and color scheme](./docs/adr/0003-ui-and-color-scheme.md)
 - [Multi-deck learning](./docs/adr/0004-multi-deck-learning.md)
 - [Saved card statistics](./docs/adr/0005-saved-answer-totals.md)
+- [Priority-weighted selection](./docs/adr/0006-priority-weighted-card-selection.md)
 - [Domain glossary](./GLOSSARY.md)
 
 

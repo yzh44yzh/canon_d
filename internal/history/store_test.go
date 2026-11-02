@@ -112,6 +112,26 @@ func TestExclusiveFolderLock(t *testing.T) {
 	openStore(t, dir)
 }
 
+func TestInitialStatisticsAreAnIndependentStartupSnapshot(t *testing.T) {
+	dir := t.TempDir()
+	id := model.CardIdentity{Deck: "a.md", Header: "Card"}
+	want := statistics{id: {Shows: 3, CorrectAnswers: 1, IncorrectAnswers: 2}}
+	if err := writeCSV(filepath.Join(dir, ".canon_d.csv"), want); err != nil {
+		t.Fatal(err)
+	}
+
+	store := openStore(t, dir)
+	snapshot := store.InitialStatistics()
+	delete(snapshot, id)
+	if err := store.Save(statistics{id: {Shows: 1, CorrectAnswers: 1}}); err != nil {
+		t.Fatal(err)
+	}
+
+	if diff := cmp.Diff(want, store.InitialStatistics()); diff != "" {
+		t.Fatalf("startup statistics changed after a save or caller mutation: %s", diff)
+	}
+}
+
 func TestInvalidCSVPreservedAndLockReleased(t *testing.T) {
 	tests := map[string]string{
 		"empty":      "",

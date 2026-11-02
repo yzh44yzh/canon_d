@@ -10,7 +10,7 @@ import (
 
 func TestSessionAnswersAndFeedback(t *testing.T) {
 	deck := parser.MakeDeck("test", "# Card\n`TCP` then `DNS`\n")
-	s, err := NewSession(deck, 10)
+	s, err := NewSession(deck, 10, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -75,16 +75,16 @@ func TestSessionReadingAndValidation(t *testing.T) {
 	deck := parser.MakeDeck("test", "# Read\nVisible text\n")
 
 	for _, limit := range []int{0, -1} {
-		if _, err := NewSession(deck, limit); err == nil {
+		if _, err := NewSession(deck, limit, nil); err == nil {
 			t.Errorf("expected invalid limit error for %d", limit)
 		}
 	}
 
-	if _, err := NewSession(model.Deck{}, 10); err == nil {
+	if _, err := NewSession(model.Deck{}, 10, nil); err == nil {
 		t.Fatal("expected empty deck error")
 	}
 
-	s, err := NewSession(deck, 1)
+	s, err := NewSession(deck, 1, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -110,7 +110,7 @@ func TestRepeatKeepsOnlyMissedOccurrences(t *testing.T) {
 	}
 	deck := model.Deck{Cards: []model.Card{card, card, card}}
 	before := append([]model.Card(nil), deck.Cards...)
-	s, err := NewSession(deck, 3)
+	s, err := NewSession(deck, 3, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -140,7 +140,7 @@ func TestRepeatKeepsOnlyMissedOccurrences(t *testing.T) {
 func TestSessionShufflesACopyAndLimits(t *testing.T) {
 	deck := parser.MakeDeck("test", "# A\n`a`\n# B\n`b`\n# C\n`c`\n")
 	before := append([]model.Card(nil), deck.Cards...)
-	s, err := NewSession(deck, 2)
+	s, err := NewSession(deck, 2, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -159,7 +159,7 @@ func TestMultiDeckSourcesSurviveRetries(t *testing.T) {
 		parser.MakeDeck("a.md", "# Same\n`answer`"),
 		parser.MakeDeck("b.md", "# Same\n`answer`"),
 	}
-	s, err := NewMultiSession(decks, 10)
+	s, err := NewMultiSession(decks, 10, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -180,7 +180,7 @@ func TestMultiDeckSourcesSurviveRetries(t *testing.T) {
 		s.Repeat()
 	}
 
-	limited, err := NewMultiSession(decks, 1)
+	limited, err := NewMultiSession(decks, 1, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
