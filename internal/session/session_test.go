@@ -153,3 +153,43 @@ func TestSessionShufflesACopyAndLimits(t *testing.T) {
 		t.Errorf("session mutated source deck: %s", diff)
 	}
 }
+
+func TestMultiDeckSourcesSurviveRetries(t *testing.T) {
+	decks := []model.Deck{
+		parser.MakeDeck("a.md", "# Same\n`answer`"),
+		parser.MakeDeck("b.md", "# Same\n`answer`"),
+	}
+	s, err := NewMultiSession(decks, 10)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for round := 0; round < 2; round++ {
+		seen := map[string]int{}
+
+		for !s.Done() {
+			seen[s.DeckName()]++
+			s.Submit("wrong")
+			s.Continue()
+		}
+
+		if diff := cmp.Diff(map[string]int{"a.md": 1, "b.md": 1}, seen); diff != "" {
+			t.Fatalf("round %d lost source occurrences: %s", round, diff)
+		}
+
+		s.Repeat()
+	}
+
+	limited, err := NewMultiSession(decks, 1)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if limited.Total() != 1 {
+		t.Fatal("limit must apply once to the combined collection")
+	}
+
+	if decks[0].Cards[0].Header.Content != "Same" || len(decks[1].Cards) != 1 {
+		t.Fatal("combining decks must preserve their contents")
+	}
+}

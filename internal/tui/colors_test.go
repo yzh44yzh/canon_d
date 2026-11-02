@@ -27,7 +27,7 @@ func TestColorSchemeReachesUI(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	m := newModel(deck.Header, session, scheme)
+	m := newModel(session, scheme)
 	m.Init()
 	wantStyles := scheme.styles()
 	check := func(want string) {

@@ -3,11 +3,11 @@
 ## Basics
 
 ### Workload Resourses
-`Deployments`
+`Deployment`
 `ReplicaSet`
-`StatefulSets`
+`StatefulSet`
 `DaemonSet`
-`Jobs`
+`Job`
 `CronJob`
 
 ### Control Plane Components

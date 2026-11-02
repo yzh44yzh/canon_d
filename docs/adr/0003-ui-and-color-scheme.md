@@ -2,11 +2,29 @@
 
 Canon D uses Bubble Tea for terminal interaction, Bubbles for text input and scrolling, and Lip Gloss for styling. The UI presents the card's context together, separates it from answer entry with rounded panels, and assigns colors by semantic role. This record describes the current implementation as of 2026-10-28.
 
+Folder selection and per-card source deck names were added on 2026-11-02.
+
+## Deck selection
+
+With `--decks DIR`, the TUI begins at `Select Decks`, showing checkboxes, filenames,
+card counts, and the number of selected decks. No decks start selected. Empty or
+unreadable decks remain visible but disabled, with their reasons. Up/Down move the
+cursor, Space toggles a usable deck, and Enter starts only after a deck is selected.
+Page Up/Down move by a page. The list scrolls to keep the cursor visible, while the
+title, selection count, and keyboard hints remain fixed. The list panel uses the
+existing border style; the focused row uses the active style and a `>` marker.
+Disabled rows use `[-]` and muted text.
+
+Deck contents are loaded once before selection. Starting practice uses that same
+snapshot. The [multi-deck record](0004-multi-deck-learning.md) describes discovery and
+combined-card selection. The minimum terminal size and Ctrl+C behavior also apply
+to the selection screen.
+
 ## Screen layout
 
 The TUI runs in the terminal's alternate screen. During practice, it renders:
 
-1. The deck name and current card number above the panels.
+1. The current card's source deck name and combined-round card number above the panels.
 2. A rounded card panel containing the hierarchical card heading and a scrollable body. A horizontal separator joins the side borders below the heading; both the heading and separator stay fixed while the body scrolls.
 3. A rounded answer panel containing the input or continuation prompt, followed by the answer counter, reading status, or feedback.
 4. Keyboard hints below the panels.
@@ -31,7 +49,10 @@ Rendering removes backticks, expands each tab into four spaces, and filters cont
 | Enter on summary | Activate the selected choice, or quit if there are no misses |
 | Ctrl+C | Quit from any screen |
 
-The text input is focused at startup and after continuing or repeating, and uses a virtual cursor. Ordinary letters, including `q`, remain answer input rather than quit shortcuts. The [session](0002-user-session.md) owns answer matching and round transitions.
+The text input is focused when practice starts and after continuing or repeating,
+and uses a virtual cursor. Ordinary letters, including `q`, remain answer input
+rather than quit shortcuts. The [session](0002-user-session.md) owns answer matching
+and round transitions.
 
 ## Color scheme
 

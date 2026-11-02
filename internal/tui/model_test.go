@@ -19,7 +19,7 @@ func testModel(t *testing.T, content string) *model {
 		t.Fatal(err)
 	}
 
-	m := newModel(deck.Header, session, DefaultColorScheme)
+	m := newModel(session, DefaultColorScheme)
 	m.Init()
 
 	return m

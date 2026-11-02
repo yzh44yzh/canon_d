@@ -13,7 +13,7 @@ import (
 
 type model struct {
 	styles    uiStyles
-	name      string
+	picker    *deckPicker
 	session   *session.Session
 	input     textinput.Model
 	viewport  viewport.Model
@@ -22,13 +22,13 @@ type model struct {
 	selection int
 }
 
-func Run(name string, session *session.Session) error {
-	_, err := tea.NewProgram(newModel(name, session, DefaultColorScheme)).Run()
+func Run(session *session.Session) error {
+	_, err := tea.NewProgram(newModel(session, DefaultColorScheme)).Run()
 
 	return err
 }
 
-func newModel(name string, session *session.Session, scheme ColorScheme) *model {
+func newModel(session *session.Session, scheme ColorScheme) *model {
 	styles := scheme.styles()
 	input := textinput.New()
 	input.SetStyles(styles.input)
@@ -36,7 +36,7 @@ func newModel(name string, session *session.Session, scheme ColorScheme) *model 
 	input.Placeholder = "Type the missing text"
 
 	m := &model{
-		styles: styles, name: name, session: session,
+		styles: styles, session: session,
 		input: input, viewport: viewport.New(),
 	}
 	m.resize(80, 24)
@@ -44,7 +44,13 @@ func newModel(name string, session *session.Session, scheme ColorScheme) *model 
 	return m
 }
 
-func (m *model) Init() tea.Cmd { return m.input.Focus() }
+func (m *model) Init() tea.Cmd {
+	if m.picker != nil {
+		return nil
+	}
+
+	return m.input.Focus()
+}
 
 func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
@@ -53,9 +59,19 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		return m, nil
 	case tea.KeyPressMsg:
-		switch msg.String() {
-		case "ctrl+c":
+		if msg.String() == "ctrl+c" {
 			return m, tea.Quit
+		}
+
+		if m.width < 20 || m.height < 11 {
+			return m, nil
+		}
+
+		if m.picker != nil {
+			return m.updatePicker(msg)
+		}
+
+		switch msg.String() {
 		case "pgup":
 			m.viewport.PageUp()
 
@@ -63,10 +79,6 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "pgdown":
 			m.viewport.PageDown()
 
-			return m, nil
-		}
-
-		if m.width < 20 || m.height < 11 {
 			return m, nil
 		}
 
@@ -91,6 +103,10 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			return m, m.input.Focus()
 		}
+	}
+
+	if m.picker != nil {
+		return m, nil
 	}
 
 	if !m.session.Done() && !m.session.AwaitingContinue() && m.session.AnswerCount() > 0 {
@@ -136,11 +152,15 @@ func (m *model) resize(width, height int) {
 	m.viewport.SetWidth(max(1, width-2))
 	m.viewport.SetHeight(max(1, height-10))
 	m.input.SetWidth(max(1, width-4))
+	if m.picker != nil {
+		m.picker.ensureVisible(m.pickerRows())
+	}
+
 	m.refreshCard()
 }
 
 func (m *model) refreshCard() {
-	if m.session.Done() {
+	if m.session == nil || m.session.Done() {
 		return
 	}
 
@@ -254,6 +274,8 @@ func (m *model) View() tea.View {
 	switch {
 	case m.width < 20 || m.height < 11:
 		content = "Resize terminal to at least 20×11. Ctrl+C to quit."
+	case m.picker != nil:
+		content = m.pickerView()
 	case m.session.Done():
 		content = fmt.Sprintf(
 			"Session complete\n\nCards: %d\nMissed cards: %d\n\n",
@@ -298,7 +320,8 @@ func (m *model) View() tea.View {
 
 		progress := ansi.Truncate(
 			fmt.Sprintf("%s · Card %d/%d",
-				displayText(m.name), m.session.CardIndex()+1, m.session.Total()),
+				displayText(m.session.DeckName()),
+				m.session.CardIndex()+1, m.session.Total()),
 			m.width, "…",
 		)
 		card := m.cardPanel()

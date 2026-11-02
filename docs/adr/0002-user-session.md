@@ -4,9 +4,19 @@ A `Session` owns practice state independently of terminal rendering. It checks a
 
 ## Starting a round
 
-The executable requires `--deck PATH` and accepts `--limit`, defaulting to 10. File-reading errors, missing deck paths, nonpositive limits, and decks with no cards stop startup with an error.
+The executable requires either `--deck FILE` or `--decks DIR` and accepts `--limit`,
+defaulting to 10. The two input flags are mutually exclusive. A single-file run
+starts practice directly; a folder run first opens [deck selection](0004-multi-deck-learning.md).
+File-reading errors in single-file mode, missing inputs, nonpositive limits, and
+inputs with no usable decks stop startup with an error.
 
 `NewSession` copies the deck's card slice, shuffles the copy, and selects `min(limit, card count)` cards. It does not reorder the source deck. Shuffling uses `math/rand/v2`; an oversized positive limit uses all available cards.
+
+`NewSession` delegates to `NewMultiSession`, which combines the selected decks into
+card occurrences carrying their source deck names. It shuffles before applying one
+global limit, with no per-deck quota or content deduplication. The source decks are
+not reordered. Source names remain attached through retry rounds, while counters
+and completion totals describe the combined round.
 
 A round tracks its selected cards, current card and answer positions, per-answer results for the current card, whether feedback is awaiting acknowledgement, and completed card occurrences that were missed. Answers are extracted from hidden line parts in line and part order.
 

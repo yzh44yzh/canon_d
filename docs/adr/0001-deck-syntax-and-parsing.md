@@ -4,7 +4,11 @@ Canon D stores decks as Markdown files and parses them into cards with visible a
 
 ## Deck and card structure
 
-A `Deck` has a header and an ordered slice of cards. The entry point uses the deck file's base name as the deck header. Each `Card` has a hierarchical `CardHeader` and a slice of `Line` values. A line stores its original text and ordered `LinePart` values; each part contains text and a visibility flag.
+A `Deck` has a header and an ordered slice of cards. The loader uses the deck file's base name as the deck header. Each `Card` has a hierarchical `CardHeader` and a slice of `Line` values. A line stores its original text and ordered `LinePart` values; each part contains text and a visibility flag.
+
+File loading is handled by the [deck loader](../../internal/decks/load.go). A mixed
+practice session retains each card occurrence's source deck separately from its
+card heading and body; parsing rules are identical for single and multiple decks.
 
 Outside fenced code, a line starting with `#` in the first column starts a card and ends the previous one. The number of leading `#` characters determines the heading level. The remaining heading text is trimmed. A space after `#` is optional, and there is no six-level restriction. Indented headings and Setext headings are not recognized.
 
@@ -45,4 +49,4 @@ This produces two cards, headed `Networking / DNS` and `Networking / Reading`. T
 - [Deck, card, header, and line types](../../internal/model/model.go)
 - [Parser](../../internal/parser/parser.go)
 - [Parser tests](../../internal/parser/parser_test.go)
-- [File loading and deck naming](../../cmd/tui/main.go)
+- [File loading and deck naming](../../internal/decks/load.go)

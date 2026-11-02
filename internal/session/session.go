@@ -10,7 +10,7 @@ import (
 
 // Session owns a TUI practice round independently of terminal rendering.
 type Session struct {
-	cards            []model.Card
+	cards            []practiceCard
 	cardIndex        int
 	answers          []string
 	answerIndex      int
@@ -18,20 +18,36 @@ type Session struct {
 	correct          bool
 	results          []bool
 	cardMissed       bool
-	missed           []model.Card
+	missed           []practiceCard
+}
+
+type practiceCard struct {
+	card model.Card
+	deck string
 }
 
 func NewSession(deck model.Deck, limit int) (*Session, error) {
+	return NewMultiSession([]model.Deck{deck}, limit)
+}
+
+// NewMultiSession shuffles all selected cards before applying one global limit.
+func NewMultiSession(decks []model.Deck, limit int) (*Session, error) {
 	if limit <= 0 {
 		return nil, errors.New("limit must be greater than zero")
 	}
 
-	if len(deck.Cards) == 0 {
-		return nil, errors.New("deck contains no cards")
+	var cards []practiceCard
+
+	for _, deck := range decks {
+		for _, card := range deck.Cards {
+			cards = append(cards, practiceCard{card: card, deck: deck.Header})
+		}
 	}
 
-	// create a shallow copy of deck.Cards
-	cards := append([]model.Card(nil), deck.Cards...)
+	if len(cards) == 0 {
+		return nil, errors.New("selected decks contain no cards")
+	}
+
 	shuffleCards(cards)
 
 	s := &Session{cards: cards[:min(limit, len(cards))]}
@@ -40,7 +56,7 @@ func NewSession(deck model.Deck, limit int) (*Session, error) {
 	return s, nil
 }
 
-func shuffleCards(cards []model.Card) {
+func shuffleCards(cards []practiceCard) {
 	rand.Shuffle(len(cards), func(i, j int) {
 		cards[i], cards[j] = cards[j], cards[i]
 	})
@@ -68,7 +84,16 @@ func (s *Session) Card() model.Card {
 		return model.Card{}
 	}
 
-	return s.cards[s.cardIndex]
+	return s.cards[s.cardIndex].card
+}
+
+// DeckName identifies the current card's source, including in retry rounds.
+func (s *Session) DeckName() string {
+	if s.Done() {
+		return ""
+	}
+
+	return s.cards[s.cardIndex].deck
 }
 
 func (s *Session) startCard() {
@@ -112,7 +137,7 @@ func (s *Session) Continue() {
 	}
 
 	if s.cardMissed {
-		s.missed = append(s.missed, s.Card())
+		s.missed = append(s.missed, s.cards[s.cardIndex])
 	}
 
 	s.cardIndex++

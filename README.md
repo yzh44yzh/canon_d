@@ -45,8 +45,29 @@ Run with a deck:
 ./canon_d --deck ./decks/golang.md --limit 10
 ```
 
+Or select several decks from a folder:
+
+```sh
+./canon_d --decks ./decks --limit 10
+```
+
+Use either `--deck` or `--decks`. The folder view lists non-hidden regular `.md` files
+in filename order, without searching subfolders. Use Up/Down to move, Space to select
+or deselect decks, and Enter to learn. No decks are selected initially. Empty or
+unreadable decks are disabled with a reason; a folder without usable decks reports
+an error. Card counts and practice use the contents loaded when the screen opens.
+Restart to pick up file changes.
+
+The selected cards are combined and shuffled before applying `--limit` (default 10).
+The limit must be positive; an oversized limit uses all available cards. There is no
+per-deck quota, so a selected deck may contribute no cards. The name above each card
+identifies its source deck, including during retries. Completion and retry controls
+are unchanged.
+
 Use a terminal of at least 20 columns and 11 rows. A horizontal rule separates the fixed card header
 from its scrollable content. Use PgUp/PgDown to scroll.
+In deck selection, PgUp/PgDown move by a page; the title, selected-deck count, and
+keyboard hints remain visible. Ctrl+C quits from any screen.
 
 You can create your own flashcards; see [decks/network.md](./decks/network.md) for an example.
 
@@ -56,6 +77,8 @@ You can create your own flashcards; see [decks/network.md](./decks/network.md) f
 - [Deck and card syntax, parsing](./docs/adr/0001-deck-syntax-and-parsing.md)
 - [User sessions, answer checking, and retries](./docs/adr/0002-user-session.md)
 - [UI layout, controls, and color scheme](./docs/adr/0003-ui-and-color-scheme.md)
+- [Multi-deck learning](./docs/adr/0004-multi-deck-learning.md)
+- [Domain glossary](./GLOSSARY.md)
 
 
 ## Future Plans
