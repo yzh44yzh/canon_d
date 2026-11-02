@@ -22,6 +22,7 @@ func TestPickerSelectionToMixedPractice(t *testing.T) {
 		pickerEntry("b.md"),
 	}
 	m := newSelectionModel(entries, 10, DefaultColorScheme)
+	m.Update(tea.WindowSizeMsg{Width: 80, Height: 24})
 	if m.Init() != nil {
 		t.Fatal("selection must not focus the answer input")
 	}

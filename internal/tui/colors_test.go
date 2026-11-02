@@ -28,6 +28,7 @@ func TestColorSchemeReachesUI(t *testing.T) {
 	}
 
 	m := newModel(session, scheme)
+	m.Update(tea.WindowSizeMsg{Width: 80, Height: 24})
 	m.Init()
 	wantStyles := scheme.styles()
 	check := func(want string) {

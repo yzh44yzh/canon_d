@@ -2,3 +2,7 @@
 *.swp
 
 canon_d
+
+# Local learning statistics and their persistent lock file
+.canon_d.csv
+.canon_d.csv.lock

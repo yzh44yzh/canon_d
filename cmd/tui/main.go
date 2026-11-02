@@ -4,8 +4,10 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"com.github.yzh44yzh/canon_d/internal/decks"
+	"com.github.yzh44yzh/canon_d/internal/history"
 	"com.github.yzh44yzh/canon_d/internal/session"
 	"com.github.yzh44yzh/canon_d/internal/tui"
 )
@@ -28,13 +30,26 @@ func run(deckFile, deckDir string, limit int) error {
 		return err
 	}
 
+	folder := deckDir
+	if folder == "" {
+		folder = filepath.Dir(deckFile)
+	}
+
+	store, err := history.Open(folder)
+	if err != nil {
+		return err
+	}
+	defer store.Close()
+
+	save := func(s *session.Session) error { return store.Save(s.Statistics()) }
+
 	if deckDir != "" {
 		entries, err := decks.LoadDirectory(deckDir)
 		if err != nil {
 			return err
 		}
 
-		return tui.RunSelection(entries, limit)
+		return tui.RunSelection(entries, limit, save)
 	}
 
 	entry := decks.LoadFile(deckFile)
@@ -47,7 +62,7 @@ func run(deckFile, deckDir string, limit int) error {
 		return err
 	}
 
-	return tui.Run(session)
+	return tui.Run(session, save)
 }
 
 func validateInput(deckFile, deckDir string, limit int) error {

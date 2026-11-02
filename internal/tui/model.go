@@ -1,6 +1,7 @@
 package tui
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -20,12 +21,20 @@ type model struct {
 	width     int
 	height    int
 	selection int
+	sizeKnown bool
+	save      func(*session.Session) error
+	err       error
 }
 
-func Run(session *session.Session) error {
-	_, err := tea.NewProgram(newModel(session, DefaultColorScheme)).Run()
+func Run(s *session.Session, save func(*session.Session) error) error {
+	return runModel(newModel(s, DefaultColorScheme), save)
+}
 
-	return err
+func runModel(m *model, save func(*session.Session) error) error {
+	m.save = save
+	_, err := tea.NewProgram(m).Run()
+
+	return errors.Join(err, m.err)
 }
 
 func newModel(session *session.Session, scheme ColorScheme) *model {
@@ -53,17 +62,22 @@ func (m *model) Init() tea.Cmd {
 }
 
 func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	defer m.recordShow()
+
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
+		m.sizeKnown = true
 		m.resize(msg.Width, msg.Height)
 
 		return m, nil
 	case tea.KeyPressMsg:
 		if msg.String() == "ctrl+c" {
+			m.saveStatistics()
+
 			return m, tea.Quit
 		}
 
-		if m.width < 20 || m.height < 11 {
+		if !m.sizeKnown || m.width < 20 || m.height < 11 {
 			return m, nil
 		}
 
@@ -97,6 +111,10 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.input.Reset()
 			} else {
 				m.session.Submit(m.input.Value())
+			}
+
+			if m.session.Done() && !m.saveStatistics() {
+				return m, tea.Quit
 			}
 
 			m.refreshCard()
@@ -272,6 +290,8 @@ func (m *model) View() tea.View {
 	var content string
 
 	switch {
+	case !m.sizeKnown:
+		content = "Waiting for terminal size…"
 	case m.width < 20 || m.height < 11:
 		content = "Resize terminal to at least 20×11. Ctrl+C to quit."
 	case m.picker != nil:
@@ -346,4 +366,22 @@ func (m *model) View() tea.View {
 	v.AltScreen = true
 
 	return v
+}
+
+func (m *model) recordShow() {
+	if m.err != nil || !m.sizeKnown || m.width < 20 || m.height < 11 || m.picker != nil {
+		return
+	}
+
+	if m.session != nil {
+		m.session.RecordShow()
+	}
+}
+
+func (m *model) saveStatistics() bool {
+	if m.save != nil && m.session != nil && m.err == nil {
+		m.err = m.save(m.session)
+	}
+
+	return m.err == nil
 }

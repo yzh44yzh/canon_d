@@ -19,6 +19,8 @@ type Session struct {
 	results          []bool
 	cardMissed       bool
 	missed           []practiceCard
+	shown            bool
+	statistics       map[model.CardIdentity]model.CardStatistics
 }
 
 type practiceCard struct {
@@ -50,7 +52,10 @@ func NewMultiSession(decks []model.Deck, limit int) (*Session, error) {
 
 	shuffleCards(cards)
 
-	s := &Session{cards: cards[:min(limit, len(cards))]}
+	s := &Session{
+		cards:      cards[:min(limit, len(cards))],
+		statistics: make(map[model.CardIdentity]model.CardStatistics),
+	}
 	s.startCard()
 
 	return s, nil
@@ -97,6 +102,7 @@ func (s *Session) DeckName() string {
 }
 
 func (s *Session) startCard() {
+	s.shown = false
 	s.answers = nil
 	s.results = nil
 	s.answerIndex = 0
@@ -119,6 +125,7 @@ func (s *Session) Submit(answer string) {
 	}
 
 	s.correct = strings.TrimSpace(answer) == strings.TrimSpace(s.answers[s.answerIndex])
+	s.recordAnswer()
 	s.results = append(s.results, s.correct)
 	s.cardMissed = s.cardMissed || !s.correct
 	s.awaitingContinue = true

@@ -100,7 +100,7 @@ type B struct {
 }
 
 func check(`v interface{}`) bool {
-	switch `v2 = v.(type)` {
+	switch `v2 := v.(type)` {
 		case A:
 			return true
 		case B:

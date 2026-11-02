@@ -1,4 +1,4 @@
-# In-memory user sessions and shuffled retries
+# User sessions, shuffled retries, and saved statistics
 
 A `Session` owns practice state independently of terminal rendering. It checks answers and builds retry rounds from missed card occurrences, while the TUI translates user input into session operations. This record describes the current implementation as of 2026-10-26.
 
@@ -43,11 +43,24 @@ The summary initially selects `Repeat missed` when mistakes exist; the user can 
 
 ## Lifetime and boundaries
 
-Session state exists only in memory. There are no accounts, saved results, scheduling intervals, or persisted learning history. Quitting discards the current state. The session contains no terminal input, colors, borders, or scrolling behavior; those belong to the [TUI](0003-ui-and-color-scheme.md).
+Round state exists in memory and is not resumed on a later run. Sessions accumulate
+per-card shows and submitted answer totals across their initial and retry rounds.
+`RecordShow` counts a presentation once; starting a new card or retry resets its
+presentation flag. The TUI calls it when a practice card can first be displayed.
+`Statistics` returns a copy of this run's cumulative totals, including unfinished
+cards. The same deck filename and full hierarchical header share totals, even when
+separate card occurrences have that identity.
+
+The [history store](0005-saved-answer-totals.md) merges these totals with prior runs,
+without changing answer checking, shuffling, limits, or retry selection. Sessions
+contain no file access or terminal rendering. There are no accounts or scheduling
+intervals. Terminal input, colors, borders, and scrolling belong to the
+[TUI](0003-ui-and-color-scheme.md).
 
 ## Implementation
 
 - [Session and round transitions](../../internal/session/session.go)
 - [Answer matching, limits, reading cards, and duplicate occurrence tests](../../internal/session/session_test.go)
+- [Cumulative show and answer tracking](../../internal/session/statistics.go)
 - [Startup and flags](../../cmd/tui/main.go)
 - [TUI input and summary handling](../../internal/tui/model.go)

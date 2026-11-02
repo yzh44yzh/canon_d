@@ -35,6 +35,11 @@ The minimum supported size is 20 columns by 11 rows. Below that size, a resize m
 
 The completion screen uses one rounded panel containing totals and, when needed, repeat/quit choices. Its keyboard hints remain below the panel.
 
+Before receiving the terminal size, the UI displays a waiting message. A card's
+first presentation at a supported size records one show; repeated redraws, scrolling,
+resizing, and feedback updates do not add shows. Starting a retry records another
+show when its first card becomes visible. Reading cards also record shows.
+
 ## Card rendering and controls
 
 Unrevealed answers appear as `[1: ???]`, `[2: ???]`, and so on, numbered within each card. The current blank uses the active style. Submitting reveals the expected answer with correct or incorrect styling; other answers remain hidden until submitted. Reading cards display their text without an answer field.
@@ -47,12 +52,18 @@ Rendering removes backticks, expands each tab into four spaces, and filters cont
 | Page Up / Page Down | Scroll the card body |
 | Up / Down / Tab / Shift+Tab | Toggle repeat/quit selection on the summary |
 | Enter on summary | Activate the selected choice, or quit if there are no misses |
-| Ctrl+C | Quit from any screen |
+| Ctrl+C | Save current practice statistics, then quit from any screen |
 
 The text input is focused when practice starts and after continuing or repeating,
 and uses a virtual cursor. Ordinary letters, including `q`, remain answer input
 rather than quit shortcuts. The [session](0002-user-session.md) owns answer matching
 and round transitions.
+
+Completing a round saves its cumulative statistics before the summary is shown.
+Ctrl+C also saves partial-card results, including an answer awaiting feedback
+acknowledgement. Quitting from deck selection writes no statistics. Save failures
+stop the TUI and return an error for the executable to report. The
+[statistics record](0005-saved-answer-totals.md) defines file location and totals.
 
 ## Color scheme
 

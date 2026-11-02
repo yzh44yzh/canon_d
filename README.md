@@ -69,6 +69,26 @@ from its scrollable content. Use PgUp/PgDown to scroll.
 In deck selection, PgUp/PgDown move by a page; the title, selected-deck count, and
 keyboard hints remain visible. Ctrl+C quits from any screen.
 
+Practice statistics are saved automatically to `.canon_d.csv` in the deck folder
+(the parent folder with `--deck`). Each row contains:
+
+```csv
+deck,card_header,shows,correct_answers,incorrect_answers
+```
+
+Totals accumulate across runs and retries. A show counts once when a card becomes
+visible; redrawing, scrolling, and resizing do not count again. Each submitted
+hidden answer adds to the correct or incorrect total. Reading cards add shows only.
+Rows are identified by deck filename and full card header; duplicate headers in a
+deck share totals, and renaming a deck or header starts a new history entry.
+
+Statistics are saved after each round and on Ctrl+C, including submitted answers
+on unfinished cards. A forced termination can lose changes since the last save.
+Invalid CSV data prevents startup; a failed save exits with an error and preserves
+the previously saved file. One run at a time may use a deck folder's history.
+The hidden `.canon_d.csv.lock` file remains beside the CSV; its presence does not
+mean a run is active. Both files are ignored by Git in this repository.
+
 You can create your own flashcards; see [decks/network.md](./decks/network.md) for an example.
 
 
@@ -78,6 +98,7 @@ You can create your own flashcards; see [decks/network.md](./decks/network.md) f
 - [User sessions, answer checking, and retries](./docs/adr/0002-user-session.md)
 - [UI layout, controls, and color scheme](./docs/adr/0003-ui-and-color-scheme.md)
 - [Multi-deck learning](./docs/adr/0004-multi-deck-learning.md)
+- [Saved card statistics](./docs/adr/0005-saved-answer-totals.md)
 - [Domain glossary](./GLOSSARY.md)
 
 

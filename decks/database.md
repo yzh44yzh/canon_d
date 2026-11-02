@@ -25,7 +25,7 @@ Automatic detection of `lost updates` and `transaction rollback`.
 SQL was first officially adopted as an `ANSI` standard in `1986`.
 
 ## SQL is an abstraction that hides:
-- complex `on-disk and` `in-memory` `data structures`;
+- complex `on-disk` and `in-memory` `data structures`;
 - `concurrent requests` from other clients;
 - `inconsistencies` after crashes.
 

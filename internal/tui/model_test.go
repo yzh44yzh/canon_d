@@ -20,6 +20,7 @@ func testModel(t *testing.T, content string) *model {
 	}
 
 	m := newModel(session, DefaultColorScheme)
+	m.Update(tea.WindowSizeMsg{Width: 80, Height: 24})
 	m.Init()
 
 	return m

@@ -5,6 +5,17 @@ type Deck struct {
 	Cards  []Card
 }
 
+type CardIdentity struct {
+	Deck   string
+	Header string
+}
+
+type CardStatistics struct {
+	Shows            uint64
+	CorrectAnswers   uint64
+	IncorrectAnswers uint64
+}
+
 type CardHeader struct {
 	Level   int
 	Content string

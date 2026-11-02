@@ -18,10 +18,8 @@ type deckPicker struct {
 	limit    int
 }
 
-func RunSelection(entries []decks.Entry, limit int) error {
-	_, err := tea.NewProgram(newSelectionModel(entries, limit, DefaultColorScheme)).Run()
-
-	return err
+func RunSelection(entries []decks.Entry, limit int, save func(*session.Session) error) error {
+	return runModel(newSelectionModel(entries, limit, DefaultColorScheme), save)
 }
 
 func newSelectionModel(entries []decks.Entry, limit int, scheme ColorScheme) *model {
