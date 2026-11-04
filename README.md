@@ -106,6 +106,31 @@ uniformly.
 
 You can create your own flashcards; see [decks/network.md](./decks/network.md) for an example.
 
+Validate a deck without opening the TUI or accessing practice history:
+
+```sh
+./canon_d --validate-deck ./decks/network.md
+```
+
+Use this flag alone, without `--deck`, `--decks`, `--limit`, or positional arguments.
+Validation reports empty decks and leaf cards, invalid or duplicate headings,
+invalid inline answers, and empty or unclosed fenced blocks. Empty section headings
+and reading cards are allowed. Content before the first heading produces a warning.
+These stricter authoring checks do not change normal practice behavior.
+
+Findings go to stdout with file names and one-based line numbers, followed by card,
+reading-card, warning, and error counts. For example, two reading cards with the same
+heading on lines 1 and 3 produce:
+
+```text
+example.md:3: error: duplicate card path: Card (first occurrence: example.md:1)
+example.md: 2 cards, 2 reading cards, 0 warnings, 1 errors
+```
+
+Exit codes are `0` for no errors (warnings are allowed), `1` for validation errors,
+and `2` for command usage or file-access failures. Operational failures go to stderr.
+See [deck validation](./docs/adr/0007-deck-validation.md) for the complete rules.
+
 
 ## Documentation
 
@@ -115,6 +140,7 @@ You can create your own flashcards; see [decks/network.md](./decks/network.md) f
 - [Multi-deck learning](./docs/adr/0004-multi-deck-learning.md)
 - [Saved card statistics](./docs/adr/0005-saved-answer-totals.md)
 - [Priority-weighted selection](./docs/adr/0006-priority-weighted-card-selection.md)
+- [Deck validation](./docs/adr/0007-deck-validation.md)
 - [Domain glossary](./GLOSSARY.md)
 
 
