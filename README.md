@@ -90,6 +90,26 @@ the previously saved file. One run at a time may use a deck folder's history.
 The hidden `.canon_d.csv.lock` file remains beside the CSV; its presence does not
 mean a run is active. Both files are ignored by Git in this repository.
 
+Both practice modes validate every history row before showing the TUI, including
+rows for removed cards. Missing history is allowed; an existing empty file is
+invalid, while a header-only file is valid. Validation requires the exact five-column
+header, unique identities, nonblank UTF-8 identity fields without control characters,
+and decimal unsigned 64-bit counters. Deck names must be filenames without directory
+separators. Positive answer totals require at least one show; multiple answers per
+show are allowed. Standard CSV quoting, blank lines, LF/CRLF, and leading zeros in
+counters are accepted. Identity comparisons preserve case and whitespace.
+
+The first error stops startup with exit code `1` and a diagnostic on stderr identifying
+the file, physical line, field where applicable, and reason. Duplicate errors also
+identify the first occurrence. The file remains untouched and its lock is released.
+For example:
+
+```text
+load statistics: decks/.canon_d.csv:3: invalid correct_answers: positive answers require shows > 0
+```
+
+See [history CSV validation](./docs/adr/0008-history-csv-validation.md) for the full rules.
+
 Initial selection favors new cards and cards with more errors relative to correct
 answers. An old card's weight is `(incorrect_answers + 1) / (correct_answers + 1)`.
 A card with no history or both answer counters at zero is new; its weight is twice
@@ -141,6 +161,7 @@ See [deck validation](./docs/adr/0007-deck-validation.md) for the complete rules
 - [Saved card statistics](./docs/adr/0005-saved-answer-totals.md)
 - [Priority-weighted selection](./docs/adr/0006-priority-weighted-card-selection.md)
 - [Deck validation](./docs/adr/0007-deck-validation.md)
+- [History CSV validation](./docs/adr/0008-history-csv-validation.md)
 - [Domain glossary](./GLOSSARY.md)
 
 

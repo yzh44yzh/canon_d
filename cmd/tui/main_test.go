@@ -122,3 +122,38 @@ func TestValidationCLIUsage(t *testing.T) {
 		})
 	}
 }
+
+func TestInvalidHistoryStopsPracticeStartup(t *testing.T) {
+	for _, mode := range []string{"--deck", "--decks"} {
+		t.Run(mode, func(t *testing.T) {
+			dir := t.TempDir()
+			path := filepath.Join(dir, ".canon_d.csv")
+			content := "deck,card_header,shows,correct_answers,incorrect_answers\n" +
+				"removed.md,Old card,0,1,0\n"
+			if err := os.WriteFile(path, []byte(content), 0600); err != nil {
+				t.Fatal(err)
+			}
+
+			target := dir
+			if mode == "--deck" {
+				target = filepath.Join(dir, "missing.md")
+			}
+
+			// Missing decks must not mask history validation or reach TUI startup.
+			var stdout, stderr bytes.Buffer
+			code := runCLI([]string{mode, target}, &stdout, &stderr)
+			if code != 1 || stdout.Len() != 0 {
+				t.Fatalf("exit %d, stdout %q", code, &stdout)
+			}
+
+			if !strings.Contains(stderr.String(), path+":2: invalid correct_answers") {
+				t.Fatalf("unexpected diagnostic: %s", &stderr)
+			}
+
+			got, err := os.ReadFile(path)
+			if err != nil || string(got) != content {
+				t.Fatal("invalid history was changed")
+			}
+		})
+	}
+}

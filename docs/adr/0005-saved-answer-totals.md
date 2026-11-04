@@ -28,7 +28,7 @@ folder, allowing single-deck and multi-deck practice to share history.
 - Save after each completed round, including retries, and on Ctrl+C. Early exit
   includes submitted answers on an unfinished card. Forced termination can lose
   changes since the last save.
-- For now, invalid existing CSV data stops startup. A failed save stops practice
+- Invalid existing CSV data stops startup. A failed save stops practice
   with a clear error and preserves the previously saved file. Successful saves
   replace the file atomically.
 - Refuse a second concurrent run using the same history file. Runs using different
@@ -62,9 +62,10 @@ The design was confirmed before implementation.
 - A temporary file in the same folder is written, flushed, synced, and closed before
   replacing the CSV. Failed saves preserve the previously saved CSV and clean up
   the temporary file. Counter overflow is an error.
-- For now, loading requires the exact CSV header, five fields per row, unsigned
-  integer counters, and unique card identities. Malformed data stops startup without
-  rewriting the file. These checks are provisional pending the deferred interview.
+- Loading requires the exact CSV header, five fields per row, unsigned integer
+  counters, and unique card identities. Malformed data stops startup without
+  rewriting the file. [History CSV validation](0008-history-csv-validation.md)
+  defines the confirmed identity rules, counter consistency, and diagnostics.
 - [The TUI](../../internal/tui/model.go) records visible presentations and requests
   saves at round completion and on Ctrl+C. The CLI owns the history store and reports
   failures after the terminal UI exits.
@@ -81,7 +82,8 @@ A retry with both answers correct changes those totals to `2,3,1`.
 
 ## Deferred interviews
 
-The user explicitly requested later design interviews about deck validation rules,
-invalid-deck behavior, and invalid-CSV behavior. The provisional decisions above
-apply until those interviews revise them; those topics are not part of the current
-interview's remaining scope.
+Explicit validation is recorded in [deck validation](0007-deck-validation.md), and
+startup history checks are recorded in
+[history CSV validation](0008-history-csv-validation.md). Normal practice continues
+to use permissive deck parsing; changes to invalid-deck behavior during practice
+remain outside these decisions.
