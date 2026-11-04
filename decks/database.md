@@ -36,5 +36,9 @@ Redis is an acronym that stands for `REmote DIctionary Server`
 The `RDB` (`Redis Database`) persistence performs point-in-time snapshots of your dataset at specified intervals.
 The `AOF` (`Append Only File`) persistence logs every write operation received by the server, that will be played again at server startup, reconstructing the original dataset.
 
+## Kibana
 
+### KQL
+`Kibana Query Language`
+`program:my_app` and `json.parsed_level:error`
 
