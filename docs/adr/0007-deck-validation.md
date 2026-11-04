@@ -65,6 +65,13 @@ warnings, and errors. Reading cards are included in the total card count.
 The stricter rules belong to this explicit validation command. They do not make
 validation a prerequisite for opening a deck in normal practice.
 
+History persistence independently enforces its
+[stored-identity rules](0008-history-csv-validation.md). Practice can still parse
+and show a card whose identity cannot be stored, such as an empty full heading.
+Its next checkpoint rejects the entire save, stops practice, and preserves the
+previous history file. This does not make authoring validation mandatory or change
+permissive parsing, duplicate occurrence handling, or card identity construction.
+
 ## Implementation
 
 - [The private source walk](../../internal/parser/source.go) records heading ancestry,

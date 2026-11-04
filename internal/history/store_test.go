@@ -1,6 +1,7 @@
 package history
 
 import (
+	"fmt"
 	"math"
 	"os"
 	"path/filepath"
@@ -22,6 +23,186 @@ func openStore(t *testing.T, dir string) *Store {
 	t.Cleanup(func() { store.Close() })
 
 	return store
+}
+
+func TestSaveRejectsInvalidMergedRows(t *testing.T) {
+	tests := []struct {
+		name, value, reason string
+		field               int
+	}{
+		{name: "empty deck", field: 0, reason: "non-whitespace"},
+		{name: "blank header", field: 1, value: " \u2003", reason: "non-whitespace"},
+		{name: "invalid UTF-8 deck", field: 0, value: "\xff.md", reason: "UTF-8"},
+		{name: "invalid UTF-8 header", field: 1, value: "\xff", reason: "UTF-8"},
+		{name: "deck newline", field: 0, value: "a\nb", reason: "control"},
+		{name: "header newline", field: 1, value: "a\nb", reason: "control"},
+		{name: "header tab", field: 1, value: "a\tb", reason: "control"},
+		{name: "header NUL", field: 1, value: "a\x00b", reason: "control"},
+		{name: "slash", field: 0, value: "a/b", reason: "filename"},
+		{name: "backslash", field: 0, value: "a\\b", reason: "filename"},
+		{name: "dot", field: 0, value: ".", reason: "filename"},
+		{name: "dot dot", field: 0, value: "..", reason: "filename"},
+		{
+			name: "zero shows correct", field: 3,
+			reason: "positive answers require shows > 0",
+		},
+		{
+			name: "zero shows incorrect", field: 4,
+			reason: "positive answers require shows > 0",
+		},
+	}
+
+	for _, existing := range []bool{false, true} {
+		for _, tt := range tests {
+			t.Run(fmt.Sprintf("existing=%v/%s", existing, tt.name), func(t *testing.T) {
+				dir := t.TempDir()
+				path := filepath.Join(dir, ".canon_d.csv")
+				var before string
+
+				if existing {
+					row := []string{"old.md", "Removed", "2", "3", "4"}
+					before = "\n" + encodeHistory(t, row)
+					err := os.WriteFile(path, []byte(before), 0600)
+					if err != nil {
+						t.Fatal(err)
+					}
+				}
+
+				store := openStore(t, dir)
+				initial := store.InitialStatistics()
+				id := model.CardIdentity{Deck: "test.md", Header: "Card"}
+				total := model.CardStatistics{Shows: 1}
+
+				switch tt.field {
+				case 0:
+					id.Deck = tt.value
+				case 1:
+					id.Header = tt.value
+				case 3:
+					total = model.CardStatistics{CorrectAnswers: 1}
+				case 4:
+					total = model.CardStatistics{IncorrectAnswers: 1}
+				}
+
+				results := statistics{
+					{Deck: "good.md", Header: "Other"}: {Shows: 1},
+					id:                                 total,
+				}
+
+				for i := 0; i < 2; i++ {
+					err := store.Save(results)
+					if err == nil {
+						t.Fatal("invalid save accepted or cached")
+					}
+
+					identity := fmt.Sprintf("deck %q, card %q",
+						id.Deck, id.Header)
+					checks := []string{
+						path, identity, columns[tt.field], tt.reason,
+					}
+					for _, text := range checks {
+						if !strings.Contains(err.Error(), text) {
+							t.Fatalf("error %q lacks %q",
+								err, text)
+						}
+					}
+				}
+
+				got, err := os.ReadFile(path)
+				if existing && (err != nil || string(got) != before) {
+					t.Fatal("invalid save changed existing history bytes")
+				}
+
+				if !existing && !os.IsNotExist(err) {
+					t.Fatal("invalid first save must not create history")
+				}
+
+				matches, err := filepath.Glob(filepath.Join(dir, ".canon_d-*.tmp"))
+				if err != nil || len(matches) != 0 {
+					t.Fatalf("temporary files: %v, %v", matches, err)
+				}
+
+				diff := cmp.Diff(initial, store.InitialStatistics())
+				if diff != "" {
+					t.Fatalf("startup snapshot changed: %s", diff)
+				}
+
+				if err := store.Close(); err != nil {
+					t.Fatal(err)
+				}
+
+				reopened := openStore(t, dir)
+				diff = cmp.Diff(initial, reopened.InitialStatistics())
+				if diff != "" {
+					t.Fatalf("invalid save changed reopened history: %s", diff)
+				}
+			})
+		}
+	}
+}
+
+func TestSaveValidatesMergedTotalsAndReopens(t *testing.T) {
+	dir := t.TempDir()
+	id := model.CardIdentity{Deck: "a", Header: "Card"}
+	stale := model.CardIdentity{Deck: "removed.md", Header: "Old / Card"}
+	base := statistics{id: {Shows: 1}, stale: {Shows: 2, IncorrectAnswers: 3}}
+	path := filepath.Join(dir, ".canon_d.csv")
+	if err := writeCSV(path, base); err != nil {
+		t.Fatal(err)
+	}
+
+	store := openStore(t, dir)
+	results := statistics{
+		id:                            {CorrectAnswers: 2},
+		{Deck: "A", Header: " Card "}: {},
+		{Deck: "old,\"deck\"", Header: "Go / Child, \"quoted\""}: {
+			Shows: 1, CorrectAnswers: math.MaxUint64, IncorrectAnswers: math.MaxUint64,
+		},
+	}
+	if err := store.Save(results); err != nil {
+		t.Fatal(err)
+	}
+
+	if diff := cmp.Diff(base, store.InitialStatistics()); diff != "" {
+		t.Fatalf("valid save changed startup snapshot: %s", diff)
+	}
+
+	// Repeated checkpoints still merge against the startup base, not the last save.
+	if err := store.Save(results); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := store.Close(); err != nil {
+		t.Fatal(err)
+	}
+
+	want := statistics{
+		id:                            {Shows: 1, CorrectAnswers: 2},
+		stale:                         {Shows: 2, IncorrectAnswers: 3},
+		{Deck: "A", Header: " Card "}: {},
+		{Deck: "old,\"deck\"", Header: "Go / Child, \"quoted\""}: {
+			Shows: 1, CorrectAnswers: math.MaxUint64, IncorrectAnswers: math.MaxUint64,
+		},
+	}
+	reopened := openStore(t, dir)
+	if diff := cmp.Diff(want, reopened.InitialStatistics()); diff != "" {
+		t.Fatalf("save/reopen mismatch (-want +got):\n%s", diff)
+	}
+}
+
+func TestSaveReportsFirstInvalidRowInIdentityOrder(t *testing.T) {
+	store := openStore(t, t.TempDir())
+	results := statistics{
+		{Deck: "z.md", Header: "\t"}:    {Shows: 1},
+		{Deck: "a.md", Header: "Bad\t"}: {Shows: 1},
+		{Deck: "a.md", Header: ""}:      {Shows: 1},
+	}
+	err := store.Save(results)
+	want := fmt.Sprintf("save statistics: %s, deck %q, card %q: ", store.path, "a.md", "") +
+		"invalid card_header: must contain non-whitespace text"
+	if err == nil || err.Error() != want {
+		t.Fatalf("save error = %v; want %s", err, want)
+	}
 }
 
 func TestSaveAcrossRunsAndCheckpoints(t *testing.T) {

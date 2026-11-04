@@ -110,6 +110,21 @@ load statistics: decks/.canon_d.csv:3: invalid correct_answers: positive answers
 
 See [history CSV validation](./docs/adr/0008-history-csv-validation.md) for the full rules.
 
+Before each save, the same identity and counter-consistency rules apply to the
+merged totals, including retained rows for removed cards. Invalid data rejects the
+entire save and stops practice, preserving the previous file. The error identifies
+the first invalid row in sorted deck/header order, with the destination path, quoted
+deck and card, field, and reason. New statistics have no CSV source line.
+
+Practice parsing remains permissive and deck validation remains optional. A card
+identity that history cannot store, such as an empty full heading or a heading with
+control characters, therefore fails at the next checkpoint rather than deck loading.
+Identities are never normalized and invalid rows are never silently skipped. Example:
+
+```text
+save statistics: decks/.canon_d.csv, deck "network.md", card "": invalid card_header: must contain non-whitespace text
+```
+
 Initial selection favors new cards and cards with more errors relative to correct
 answers. An old card's weight is `(incorrect_answers + 1) / (correct_answers + 1)`.
 A card with no history or both answer counters at zero is new; its weight is twice

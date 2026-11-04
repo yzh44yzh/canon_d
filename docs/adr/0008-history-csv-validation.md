@@ -53,10 +53,42 @@ and shows without answers are valid. Do not impose an answers-per-show limit:
 one card can contain multiple answers. Accept maximum counter values at startup;
 retain overflow protection when saving additional results.
 
+## Validation before saving
+
+- Every successful save must satisfy the same persisted-row rules as startup.
+  Validate the full merged snapshot in sorted deck/header order before creating
+  the temporary file, including retained identities for removed or renamed cards.
+- Validate merged totals, not current-run counters alone. New answers with zero
+  new shows are valid if saved history already provides a positive show count.
+  Typed counters already enforce unsigned 64-bit range; retain merge overflow checks.
+- Reject the entire save on invalid data. Do not normalize identities, skip rows,
+  or repair data. Preserve the previous file bytes, the startup snapshot, and the
+  last successfully saved results. A rejected first save must not create a CSV.
+- Keep practice parsing permissive and deck validation optional. If practice
+  produces an unpersistable identity, fail at its next checkpoint and stop practice
+  under the existing save-failure policy. Do not reject the deck during loading.
+- Report the first invalid row with the destination path, quoted deck and card,
+  field name, and reason. New rows have no existing CSV source line. CSV loading
+  retains its existing physical-line diagnostics.
+- Unchanged successful checkpoints remain no-ops, and successful writes retain
+  atomic replacement. Do not change locking, history startup order, or snapshots
+  used for initial card priorities.
+
+For example, an empty root heading with a reading body can be practiced but causes:
+
+```text
+save statistics: decks/.canon_d.csv, deck "network.md", card "": invalid card_header: must contain non-whitespace text
+```
+
 ## Implementation
 
 [CSV loading](../../internal/history/csv.go) validates decoded identities, counters,
 and duplicate keys, using physical CSV field positions for diagnostics.
+[Shared typed-row validation](../../internal/history/validation.go) owns identity
+and answer/show consistency rules used by both loading and writing. CSV syntax,
+numeric decoding, and duplicate-record checks remain with the reader. The writer
+validates sorted rows before opening a temporary file; it never round-trips typed
+statistics through CSV to validate them.
 [The history store](../../internal/history/store.go) acquires the folder lock before
 loading and releases it on failure. [Practice startup](../../cmd/tui/main.go) opens
 the history before loading decks or starting the TUI.

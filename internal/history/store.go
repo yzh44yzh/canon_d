@@ -54,6 +54,7 @@ func (s *Store) InitialStatistics() statistics { return maps.Clone(s.base) }
 
 // Save merges cumulative results from this run with the original stored totals.
 // Repeated saves never add the same submissions or shows twice.
+// Invalid merged rows fail before writing, preserving the previously saved file.
 func (s *Store) Save(results statistics) error {
 	if maps.Equal(results, s.saved) {
 		return nil

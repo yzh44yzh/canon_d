@@ -133,3 +133,54 @@ func TestSaveFailureStopsPractice(t *testing.T) {
 		t.Fatal("failed save must quit the TUI")
 	}
 }
+
+func TestUnpersistableCardStopsAtCheckpointAndPreservesHistory(t *testing.T) {
+	for _, quit := range []bool{false, true} {
+		name := "round completion"
+		if quit {
+			name = "Ctrl+C"
+		}
+
+		t.Run(name, func(t *testing.T) {
+			dir := t.TempDir()
+			path := filepath.Join(dir, ".canon_d.csv")
+			before := "deck,card_header,shows,correct_answers,incorrect_answers\n" +
+				"old.md,Kept,2,1,0\n"
+			if err := os.WriteFile(path, []byte(before), 0600); err != nil {
+				t.Fatal(err)
+			}
+
+			store, err := history.Open(dir)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			t.Cleanup(func() { store.Close() })
+			m := testModel(t, "#\nReading")
+			m.practice.save = func(s *session.Session) error {
+				return store.Save(s.Statistics())
+			}
+
+			var cmd tea.Cmd
+
+			if quit {
+				_, cmd = m.Update(tea.KeyPressMsg{Code: 'c', Mod: tea.ModCtrl})
+			} else {
+				cmd = press(m, tea.KeyEnter)
+			}
+
+			if m.practice.err == nil || cmd == nil {
+				t.Fatal("invalid save must stop practice")
+			}
+
+			if _, ok := cmd().(tea.QuitMsg); !ok {
+				t.Fatal("invalid save must quit the TUI")
+			}
+
+			got, err := os.ReadFile(path)
+			if err != nil || string(got) != before {
+				t.Fatal("unpersistable card changed saved history")
+			}
+		})
+	}
+}

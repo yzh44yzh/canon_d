@@ -12,8 +12,6 @@ import (
 	"slices"
 	"strconv"
 	"strings"
-	"unicode"
-	"unicode/utf8"
 
 	"com.github.yzh44yzh/canon_d/internal/model"
 )
@@ -87,23 +85,12 @@ func csvReadError(path string, err error) error {
 	return fmt.Errorf("%s:1: read CSV header or record: %w", path, err)
 }
 
-type fieldError struct {
-	index int
-	err   error
-}
-
-func (e *fieldError) Error() string {
-	return fmt.Sprintf("invalid %s: %v", columns[e.index], e.err)
-}
-
 func parseRow(fields []string) (model.CardIdentity, model.CardStatistics, error) {
 	id := model.CardIdentity{Deck: fields[0], Header: fields[1]}
 	var counts [3]uint64
 
-	for i := 0; i < 2; i++ {
-		if err := validateIdentityField(fields[i], i == 0); err != nil {
-			return id, model.CardStatistics{}, &fieldError{index: i, err: err}
-		}
+	if err := validateIdentity(id); err != nil {
+		return id, model.CardStatistics{}, err
 	}
 
 	for i := range counts {
@@ -117,43 +104,25 @@ func parseRow(fields []string) (model.CardIdentity, model.CardStatistics, error)
 		counts[i] = value
 	}
 
-	if counts[0] == 0 {
-		for i := 1; i < len(counts); i++ {
-			if counts[i] > 0 {
-				return id, model.CardStatistics{}, &fieldError{
-					index: i + 2,
-					err:   errors.New("positive answers require shows > 0"),
-				}
-			}
-		}
-	}
-
-	return id, model.CardStatistics{
+	total := model.CardStatistics{
 		Shows: counts[0], CorrectAnswers: counts[1], IncorrectAnswers: counts[2],
-	}, nil
-}
-
-func validateIdentityField(value string, deck bool) error {
-	if !utf8.ValidString(value) {
-		return errors.New("must contain valid UTF-8")
+	}
+	if err := validateTotals(total); err != nil {
+		return id, model.CardStatistics{}, err
 	}
 
-	if strings.TrimSpace(value) == "" {
-		return errors.New("must contain non-whitespace text")
-	}
-
-	if strings.ContainsFunc(value, unicode.IsControl) {
-		return errors.New("control characters are not allowed")
-	}
-
-	if deck && (value == "." || value == ".." || strings.ContainsAny(value, "/\\")) {
-		return errors.New("must be a filename, without directory separators")
-	}
-
-	return nil
+	return id, total, nil
 }
 
 func writeCSV(path string, results statistics) error {
+	ids := slices.SortedFunc(maps.Keys(results), compareIdentities)
+
+	for _, id := range ids {
+		if err := validateRow(id, results[id]); err != nil {
+			return fmt.Errorf("%s, deck %q, card %q: %w", path, id.Deck, id.Header, err)
+		}
+	}
+
 	file, err := os.CreateTemp(filepath.Dir(path), ".canon_d-*.tmp")
 	if err != nil {
 		return err
@@ -165,8 +134,6 @@ func writeCSV(path string, results statistics) error {
 	if err := writer.Write(columns); err != nil {
 		return err
 	}
-
-	ids := slices.SortedFunc(maps.Keys(results), compareIdentities)
 
 	for _, id := range ids {
 		total := results[id]

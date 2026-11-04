@@ -62,6 +62,13 @@ The design was confirmed before implementation.
 - A temporary file in the same folder is written, flushed, synced, and closed before
   replacing the CSV. Failed saves preserve the previously saved CSV and clean up
   the temporary file. Counter overflow is an error.
+- Before creating the temporary file, validate every merged row with the same
+  identity and answer/show consistency rules used when loading. Reject the entire
+  save on the first invalid row in sorted deck/header order. Preserve identities
+  exactly, all previous file bytes, and the startup snapshot. A successful save
+  must remain readable by the history store. The
+  [history validation record](0008-history-csv-validation.md) defines save diagnostics
+  and the failure policy for permissively parsed identities that cannot be stored.
 - Loading requires the exact CSV header, five fields per row, unsigned integer
   counters, and unique card identities. Malformed data stops startup without
   rewriting the file. [History CSV validation](0008-history-csv-validation.md)
