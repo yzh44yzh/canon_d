@@ -151,3 +151,148 @@ func TestEmptyCardsAndCRLF(t *testing.T) {
 		}
 	}
 }
+
+func TestSourceWalkBehavior(t *testing.T) {
+	tests := []struct {
+		name, content string
+		headers       []string
+		bodies        []string
+		answers       [][]string
+		findings      []Finding
+	}{
+		{
+			name: "preamble fence and unrestricted heading levels",
+			content: "```text\n# ignored\n```\n#Root\n#######Child\n" +
+				"  # literal\n`ok`\n\n",
+			headers: []string{"Root / Child"},
+			bodies:  []string{"  # literal\n`ok`\n\n"},
+			answers: [][]string{{"ok"}},
+			findings: []Finding{
+				{
+					Line: 1, Warning: true,
+					Message: "content before the first heading is ignored",
+				},
+				{
+					Line: 2, Warning: true,
+					Message: "content before the first heading is ignored",
+				},
+				{
+					Line: 3, Warning: true,
+					Message: "content before the first heading is ignored",
+				},
+			},
+		},
+		{
+			name:    "unclosed preamble fence hides headings",
+			content: "~~~\n# apparent\n",
+			findings: []Finding{
+				{
+					Line: 1, Warning: true,
+					Message: "content before the first heading is ignored",
+				},
+				{Line: 1, Message: "unclosed fenced block"},
+				{Line: 1, Message: "empty deck: no usable cards"},
+				{
+					Line: 2, Warning: true,
+					Message: "content before the first heading is ignored",
+				},
+			},
+		},
+		{
+			name: "equal-line heading findings retain order", content: "#",
+			findings: []Finding{
+				{Line: 1, Message: "empty heading title"},
+				{Line: 1, Message: "empty leaf card"},
+				{Line: 1, Message: "empty deck: no usable cards"},
+			},
+		},
+		{
+			name: "equal-line preamble findings retain order", content: "```",
+			findings: []Finding{
+				{
+					Line: 1, Warning: true,
+					Message: "content before the first heading is ignored",
+				},
+				{Line: 1, Message: "unclosed fenced block"},
+				{Line: 1, Message: "empty fenced block"},
+				{Line: 1, Message: "empty deck: no usable cards"},
+			},
+		},
+		{
+			name: "LF trailing blank lines", content: "# Read\ntext\n\n",
+			headers: []string{"Read"}, bodies: []string{"text\n\n"},
+			answers: [][]string{nil},
+		},
+		{
+			name: "CRLF trailing blank lines", content: "# Read\r\ntext\r\n\r\n",
+			headers: []string{"Read"}, bodies: []string{"text\n\n"},
+			answers: [][]string{nil},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			deck := MakeDeck("test", tt.content)
+			var headers, bodies []string
+			var answers [][]string
+
+			for _, card := range deck.Cards {
+				headers = append(headers, card.Header.Show())
+				var originals []string
+				var hidden []string
+
+				for _, line := range card.Lines {
+					originals = append(originals, line.Original)
+					var restored strings.Builder
+
+					for _, part := range line.Parts {
+						restored.WriteString(part.Content)
+
+						if !part.Visible {
+							hidden = append(hidden, part.Content)
+						}
+					}
+
+					if restored.String() != line.Original {
+						t.Fatalf("source changed: %q", line.Original)
+					}
+				}
+
+				bodies = append(bodies, strings.Join(originals, "\n"))
+				answers = append(answers, hidden)
+			}
+
+			if diff := cmp.Diff(tt.headers, headers); diff != "" {
+				t.Errorf("headers (-want +got):\n%s", diff)
+			}
+
+			if diff := cmp.Diff(tt.bodies, bodies); diff != "" {
+				t.Errorf("bodies (-want +got):\n%s", diff)
+			}
+
+			if diff := cmp.Diff(tt.answers, answers); diff != "" {
+				t.Errorf("answers (-want +got):\n%s", diff)
+			}
+
+			want := Validation{Cards: len(tt.headers), Findings: tt.findings}
+
+			for _, hidden := range tt.answers {
+				if len(hidden) == 0 {
+					want.ReadingCards++
+				}
+			}
+
+			for _, finding := range tt.findings {
+				if finding.Warning {
+					want.Warnings++
+				} else {
+					want.Errors++
+				}
+			}
+
+			if diff := cmp.Diff(want, Validate(tt.content)); diff != "" {
+				t.Errorf("validation (-want +got):\n%s", diff)
+			}
+		})
+	}
+}

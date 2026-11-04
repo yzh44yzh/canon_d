@@ -26,16 +26,10 @@ type Validation struct {
 	Findings     []Finding
 }
 
-type sourceHeading struct {
-	header   model.CardHeader
-	line     int
-	body     bool
-	children bool
-}
-
 // Validate checks the stricter authoring rules while using practice card counts.
 func Validate(content string) Validation {
-	deck := MakeDeck("", content)
+	source := scanSource(content)
+	deck := source.deck("")
 	result := Validation{Cards: len(deck.Cards)}
 
 	for _, card := range deck.Cards {
@@ -44,84 +38,21 @@ func Validate(content string) Validation {
 		}
 	}
 
-	var headings []*sourceHeading
-	var stack []*sourceHeading
-	var current *sourceHeading
-	var fence string
-	var fenceLine int
-	var fenceBody bool
+	result.checkLines(source.preamble)
 
-	for i, line := range strings.Split(strings.ReplaceAll(content, "\r\n", "\n"), "\n") {
-		lineNumber := i + 1
-
-		if fence == "" && strings.HasPrefix(line, "#") {
-			header := makeCardHeader(line)
-
-			for len(stack) > 0 && stack[len(stack)-1].header.Level >= header.Level {
-				stack = stack[:len(stack)-1]
-			}
-
-			if len(stack) > 0 {
-				parent := stack[len(stack)-1]
-				parent.children = true
-				header.Parent = &parent.header
-			}
-
-			current = &sourceHeading{header: header, line: lineNumber}
-			headings = append(headings, current)
-			stack = append(stack, current)
-
-			if header.Content == "" {
-				result.add(lineNumber, "empty heading title")
-			}
-
-			if strings.Contains(header.Content, "/") {
-				result.add(lineNumber, "slash is not allowed in heading titles")
-			}
-
-			continue
+	for _, heading := range source.headings {
+		if heading.header.Content == "" {
+			result.add(heading.line, "empty heading title")
 		}
 
-		if strings.TrimSpace(line) != "" {
-			if current == nil {
-				result.Findings = append(result.Findings, Finding{
-					Line: lineNumber, Warning: true,
-					Message: "content before the first heading is ignored",
-				})
-			} else {
-				current.body = true
-			}
+		if strings.Contains(heading.header.Content, "/") {
+			result.add(heading.line, "slash is not allowed in heading titles")
 		}
 
-		next := nextFence(line, fence)
-
-		switch {
-		case fence == "" && next != "":
-			fenceLine, fenceBody = lineNumber, false
-		case fence != "" && next == "":
-			if !fenceBody {
-				result.add(fenceLine, "empty fenced block")
-			}
-		case fence != "":
-			fenceBody = fenceBody || strings.TrimSpace(line) != ""
-		default:
-			if message := inlineProblem(line); message != "" {
-				result.add(lineNumber, message)
-			}
-		}
-
-		fence = next
+		result.checkLines(heading.lines)
 	}
 
-	if fence != "" {
-		result.add(fenceLine, "unclosed fenced block")
-
-		if !fenceBody {
-			result.add(fenceLine, "empty fenced block")
-		}
-	}
-
-	result.checkHeadings(headings)
+	result.checkHeadings(source.headings)
 
 	if result.Cards == 0 {
 		result.add(1, "empty deck: no usable cards")
@@ -140,6 +71,48 @@ func Validate(content string) Validation {
 	}
 
 	return result
+}
+
+// checkLines applies authoring rules to the source walk's fence classifications.
+// A fence cannot cross a recognized heading, so each body can be checked separately.
+func (v *Validation) checkLines(lines []sourceLine) {
+	var fenceLine int
+	var fenceBody bool
+	var unclosed bool
+
+	for _, line := range lines {
+		if line.preamble && !line.blank {
+			v.Findings = append(v.Findings, Finding{
+				Line: line.number, Warning: true,
+				Message: "content before the first heading is ignored",
+			})
+		}
+
+		switch {
+		case line.fenceBefore == "" && line.fenceAfter != "":
+			fenceLine, fenceBody = line.number, false
+		case line.fenceBefore != "" && line.fenceAfter == "":
+			if !fenceBody {
+				v.add(fenceLine, "empty fenced block")
+			}
+		case line.fenceBefore != "":
+			fenceBody = fenceBody || !line.blank
+		default:
+			if message := inlineProblem(line.text); message != "" {
+				v.add(line.number, message)
+			}
+		}
+
+		unclosed = line.fenceAfter != ""
+	}
+
+	if unclosed {
+		v.add(fenceLine, "unclosed fenced block")
+
+		if !fenceBody {
+			v.add(fenceLine, "empty fenced block")
+		}
+	}
 }
 
 func (v *Validation) add(line int, message string) {

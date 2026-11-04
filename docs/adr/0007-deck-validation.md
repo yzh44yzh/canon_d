@@ -67,9 +67,13 @@ validation a prerequisite for opening a deck in normal practice.
 
 ## Implementation
 
-- [Parser validation](../../internal/parser/validate.go) reuses the practice parser's
-  heading and fence recognition, retains source locations for diagnostics, and uses
-  parsed cards for total and reading-card counts. Findings are sorted by source line.
+- [The private source walk](../../internal/parser/source.go) records heading ancestry,
+  body presence, source locations, and fence context once for both practice parsing
+  and validation. It retains preamble lines and bodyless headings for diagnostics.
+- [Parser validation](../../internal/parser/validate.go) applies authoring rules to
+  that snapshot and builds cards from it for total and reading-card counts, without
+  parsing the source again. Findings are stably sorted by source line, retaining
+  their original order when locations match. Practice parsing stays permissive.
 - [The command entry point](../../cmd/tui/main.go) handles validation before opening
   history or starting the TUI, and owns report formatting and exit codes.
 - [Validation tests](../../internal/parser/validate_test.go) cover authoring rules,

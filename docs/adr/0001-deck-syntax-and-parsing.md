@@ -24,7 +24,10 @@ A heading's parent is the nearest preceding heading with a smaller level. `CardH
 
 ## Formatting and display boundary
 
-`MakeDeck` normalizes CRLF to LF and removes one final newline before splitting the input. Within card bodies it retains indentation, blank lines, fence markers, and inline backticks. Concatenating a line's parts reconstructs its `Original` value. A body containing fence markers is nonempty even if the fenced block has no answers.
+`MakeDeck` normalizes CRLF to LF before splitting the input, retaining trailing
+blank lines. Within card bodies it retains indentation, blank lines, fence markers,
+and inline backticks. Concatenating a line's parts reconstructs its `Original` value.
+A body containing fence markers is nonempty even if the fenced block has no answers.
 
 The TUI separately removes backticks from display, expands tabs, filters control characters, wraps text, and inserts numbered placeholders. It does not change the stored answer text. Answer checking belongs to the [session](0002-user-session.md).
 
@@ -46,7 +49,14 @@ This produces two cards, headed `Networking / DNS` and `Networking / Reading`. T
 
 ## Implementation
 
+Practice parsing and explicit validation use one private source walk. It records
+heading ancestry, body presence, source line numbers, and fence context, including
+the ignored preamble and bodyless section headings. Card formatting consumes that
+context without recognizing fences again. Validation applies its stricter authoring
+rules to the same snapshot; it remains optional and does not change practice parsing.
+
 - [Deck, card, header, and line types](../../internal/model/model.go)
+- [Shared source walk](../../internal/parser/source.go)
 - [Parser](../../internal/parser/parser.go)
 - [Parser tests](../../internal/parser/parser_test.go)
 - [File loading and deck naming](../../internal/decks/load.go)
