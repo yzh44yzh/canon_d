@@ -16,6 +16,10 @@ hidden answers, or both.
 One pass through a set of card occurrences. A retry round contains the occurrences
 missed in the preceding round.
 
+**Practice**:
+A run of learning from selected decks, comprising an initial round and any retry
+rounds until the learner quits.
+
 **Card identity**:
 The source deck's filename together with the card's full hierarchical header.
 Changing either identifies a different card for learning history.

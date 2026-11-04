@@ -26,7 +26,7 @@ func connectHistory(t *testing.T, m *model) string {
 	}
 
 	t.Cleanup(func() { store.Close() })
-	m.save = func(s *session.Session) error { return store.Save(s.Statistics()) }
+	m.practice.save = func(s *session.Session) error { return store.Save(s.Statistics()) }
 
 	return filepath.Join(dir, ".canon_d.csv")
 }
@@ -60,27 +60,11 @@ func TestCtrlCSavesPartialCardDuringFeedback(t *testing.T) {
 	m.input.SetValue("one")
 	press(m, tea.KeyEnter)
 	m.Update(tea.KeyPressMsg{Code: 'c', Mod: tea.ModCtrl})
-	if m.err != nil {
-		t.Fatal(m.err)
+	if m.practice.err != nil {
+		t.Fatal(m.practice.err)
 	}
 
 	checkSavedRow(t, path, []string{"test", "Card", "1", "1", "0"})
-}
-
-func TestCompletedAndRetryRoundsSaveOnce(t *testing.T) {
-	m := testModel(t, "# Card\n`answer`")
-	path := connectHistory(t, m)
-	m.input.SetValue("wrong")
-	press(m, tea.KeyEnter)
-	press(m, tea.KeyEnter)
-	checkSavedRow(t, path, []string{"test", "Card", "1", "0", "1"})
-	press(m, tea.KeyEnter)
-	m.input.SetValue("answer")
-	press(m, tea.KeyEnter)
-	press(m, tea.KeyEnter)
-	checkSavedRow(t, path, []string{"test", "Card", "2", "1", "1"})
-	m.Update(tea.KeyPressMsg{Code: 'c', Mod: tea.ModCtrl})
-	checkSavedRow(t, path, []string{"test", "Card", "2", "1", "1"})
 }
 
 func TestShowWaitsForVisibleCardAndIgnoresRedraws(t *testing.T) {
@@ -105,18 +89,25 @@ func TestShowWaitsForVisibleCardAndIgnoresRedraws(t *testing.T) {
 		m.Update(tea.WindowSizeMsg{Width: 70, Height: 20})
 	}
 
-	path := connectHistory(t, m)
-	m.Update(tea.KeyPressMsg{Code: 'c', Mod: tea.ModCtrl})
-	checkSavedRow(t, path, []string{"read.md", "Read", "1", "0", "0"})
+	want := map[domain.CardIdentity]domain.CardStatistics{
+		{Deck: "read.md", Header: "Read"}: {Shows: 1},
+	}
+	if diff := cmp.Diff(want, s.Statistics()); diff != "" {
+		t.Fatalf("visible presentation statistics: %s", diff)
+	}
 }
 
 func TestSelectionHasNoShowsBeforePractice(t *testing.T) {
 	m := newSelectionModel([]decks.Entry{pickerEntry("a.md")}, 1, nil, DefaultColorScheme)
-	path := connectHistory(t, m)
+	saves := 0
+	m.practice.save = func(*session.Session) error {
+		saves++
+		return nil
+	}
 	m.Update(tea.WindowSizeMsg{Width: 80, Height: 24})
 	m.Update(tea.KeyPressMsg{Code: 'c', Mod: tea.ModCtrl})
-	if _, err := os.Stat(path); !os.IsNotExist(err) {
-		t.Fatal("quitting in selection must not create statistics")
+	if saves != 0 {
+		t.Fatal("quitting in selection must not request a checkpoint")
 	}
 
 	press(m, tea.KeySpace)
@@ -124,7 +115,7 @@ func TestSelectionHasNoShowsBeforePractice(t *testing.T) {
 	want := map[domain.CardIdentity]domain.CardStatistics{
 		{Deck: "a.md", Header: "Card"}: {Shows: 1},
 	}
-	if diff := cmp.Diff(want, m.session.Statistics()); diff != "" {
+	if diff := cmp.Diff(want, m.practice.session.Statistics()); diff != "" {
 		t.Fatalf("starting practice must record its first card: %s", diff)
 	}
 }
@@ -132,9 +123,9 @@ func TestSelectionHasNoShowsBeforePractice(t *testing.T) {
 func TestSaveFailureStopsPractice(t *testing.T) {
 	m := testModel(t, "# Read\nReading")
 	want := errors.New("disk unavailable")
-	m.save = func(*session.Session) error { return want }
+	m.practice.save = func(*session.Session) error { return want }
 	cmd := press(m, tea.KeyEnter)
-	if !errors.Is(m.err, want) || cmd == nil {
+	if !errors.Is(m.practice.err, want) || cmd == nil {
 		t.Fatal("failed save must retain the error and stop practice")
 	}
 

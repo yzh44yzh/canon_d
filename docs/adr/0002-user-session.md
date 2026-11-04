@@ -1,6 +1,9 @@
 # User sessions, shuffled retries, and saved statistics
 
-A `Session` owns practice state independently of terminal rendering. It checks answers and builds retry rounds from missed card occurrences, while the TUI translates user input into session operations. This record describes the current implementation as of 2026-10-26.
+A `Session` owns round state independently of terminal rendering. It checks answers
+and builds retry rounds from missed card occurrences. The TUI translates user input
+into actions on a private practice coordinator, which sequences session operations
+and checkpoints. Terminal rendering and file access remain outside the session.
 
 ## Starting a round
 
@@ -35,7 +38,12 @@ A round tracks its selected cards, current card and answer positions, per-answer
 
 `Submit` has no effect during feedback, on reading cards, or after the round is complete. `Continue` cannot skip an unanswered answer. A reading card has no hidden parts and completes with one `Continue`, without becoming missed. Operations after completion are harmless; `Card` returns an empty card.
 
-The TUI maps Enter to submission while answering, and to `Continue` during feedback or on a reading card. It ignores ordinary typing during feedback and clears the input after continuing. The same Enter press never both submits and acknowledges an answer.
+The TUI maps Enter to the practice coordinator's advance action. The coordinator
+chooses submission while answering, or `Continue` during feedback or on a reading
+card. It reports whether an answer was submitted, feedback acknowledged, a card
+advanced, or a round completed. The TUI uses those results to clear input and reset
+scrolling without comparing session positions. It ignores ordinary typing during
+feedback. The same Enter press never both submits and acknowledges an answer.
 
 ## Completion and retry rounds
 
@@ -52,7 +60,8 @@ The summary initially selects `Repeat missed` when mistakes exist; the user can 
 Round state exists in memory and is not resumed on a later run. Sessions accumulate
 per-card shows and submitted answer totals across their initial and retry rounds.
 `RecordShow` counts a presentation once; starting a new card or retry resets its
-presentation flag. The TUI calls it when a practice card can first be displayed.
+presentation flag. The TUI reports display eligibility to the practice coordinator,
+which requests show recording only while practice has no save failure.
 `Statistics` returns a copy of this run's cumulative totals, including unfinished
 cards. The same deck filename and full hierarchical header share totals, even when
 separate card occurrences have that identity.
@@ -67,6 +76,7 @@ intervals. Terminal input, colors, borders, and scrolling belong to the
 ## Implementation
 
 - [Session and round transitions](../../internal/session/session.go)
+- [Practice actions and checkpoint sequencing](../../internal/tui/practice.go)
 - [Answer matching, limits, reading cards, and duplicate occurrence tests](../../internal/session/session_test.go)
 - [Cumulative show and answer tracking](../../internal/session/statistics.go)
 - [Weighted initial selection](../../internal/session/selection.go)

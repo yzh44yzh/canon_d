@@ -60,12 +60,12 @@ func TestWholeCardMasksAndRevealsSequentially(t *testing.T) {
 	}
 
 	press(m, 'q')
-	if m.input.Value() != "wrong" || !m.session.AwaitingContinue() {
+	if m.input.Value() != "wrong" || !m.practice.session.AwaitingContinue() {
 		t.Fatal("typing during feedback must not submit or advance")
 	}
 
 	press(m, tea.KeyEnter)
-	if m.session.AnswerIndex() != 1 || m.input.Value() != "" {
+	if m.practice.session.AnswerIndex() != 1 || m.input.Value() != "" {
 		t.Fatal("acknowledgement should advance and clear input")
 	}
 
@@ -76,12 +76,12 @@ func TestWholeCardMasksAndRevealsSequentially(t *testing.T) {
 	}
 
 	press(m, tea.KeyEnter)
-	if !m.session.Done() || !strings.Contains(m.View().Content, "Missed cards: 1") {
+	if !m.practice.session.Done() || !strings.Contains(m.View().Content, "Missed cards: 1") {
 		t.Fatal("missing session summary")
 	}
 
 	press(m, tea.KeyEnter)
-	if m.session.Done() || strings.Contains(m.View().Content, "secret-one") {
+	if m.practice.session.Done() || strings.Contains(m.View().Content, "secret-one") {
 		t.Fatal("repeat should hide all answers again")
 	}
 }
@@ -152,7 +152,7 @@ func TestTerminalBelowMinimumHeight(t *testing.T) {
 	}
 
 	press(m, tea.KeyEnter)
-	if m.session.AwaitingContinue() {
+	if m.practice.session.AwaitingContinue() {
 		t.Fatal("Enter must not submit while the card is hidden")
 	}
 }
@@ -188,7 +188,7 @@ func TestActiveAnswerScrollsAndResizes(t *testing.T) {
 func TestReadingCardsAndSummaryChoices(t *testing.T) {
 	m := testModel(t, "# Read\nVisible\n")
 	press(m, tea.KeyEnter)
-	if !m.session.Done() || press(m, tea.KeyEnter) == nil {
+	if !m.practice.session.Done() || press(m, tea.KeyEnter) == nil {
 		t.Fatal("reading card should advance to summary and allow exit")
 	}
 

@@ -96,7 +96,7 @@ func (m *model) updatePicker(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 			return m, nil
 		}
 
-		m.session = s
+		m.practice.start(s)
 		m.picker = nil
 		m.refreshCard()
 

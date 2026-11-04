@@ -65,6 +65,13 @@ acknowledgement. Quitting from deck selection writes no statistics. Save failure
 stop the TUI and return an error for the executable to report. The
 [statistics record](0005-saved-answer-totals.md) defines file location and totals.
 
+The private practice coordinator owns submission versus continuation, retry
+transitions, checkpoint timing, and the first save failure. The terminal adapter
+owns key mapping, display eligibility, summary selection, input focus, scrolling,
+and rendering. Rendering reads session state; practice mutations go through the
+coordinator. Its transition results determine input and scroll resets. Saves remain
+synchronous, and a save failure blocks further practice actions and show recording.
+
 ## Color scheme
 
 `ColorScheme` defines five `color.Color` fields. `DefaultColorScheme` supplies one terminal-palette scheme; styles are built when the UI model is constructed and reused by the input, card renderer, panels, and summary.
@@ -84,6 +91,8 @@ Color supplements existing indicators: active blanks and selected choices use bo
 ## Implementation
 
 - [UI model, rendering, sizing, and controls](../../internal/tui/model.go)
+- [Practice lifecycle coordinator](../../internal/tui/practice.go)
+- [Practice lifecycle tests](../../internal/tui/practice_test.go)
 - [Color roles and derived styles](../../internal/tui/colors.go)
 - [Interaction, scrolling, resize, and layout tests](../../internal/tui/model_test.go)
 - [Scheme propagation tests](../../internal/tui/colors_test.go)

@@ -35,7 +35,7 @@ func TestPickerSelectionToMixedPractice(t *testing.T) {
 	}
 
 	press(m, tea.KeyEnter)
-	if m.session != nil {
+	if m.practice.session != nil {
 		t.Fatal("Enter with no selection must not start practice")
 	}
 
@@ -59,15 +59,15 @@ func TestPickerSelectionToMixedPractice(t *testing.T) {
 	}
 
 	press(m, tea.KeyEnter)
-	if m.picker != nil || m.session.Total() != 2 {
+	if m.picker != nil || m.practice.session.Total() != 2 {
 		t.Fatal("Enter should start one combined round")
 	}
 
 	for round := 0; round < 2; round++ {
 		seen := map[string]bool{}
 
-		for !m.session.Done() {
-			name := m.session.DeckName()
+		for !m.practice.session.Done() {
+			name := m.practice.session.DeckName()
 			if !strings.Contains(ansi.Strip(m.View().Content), name+" · Card") {
 				t.Fatal("header must follow the current card's deck")
 			}

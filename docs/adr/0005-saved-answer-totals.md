@@ -66,9 +66,20 @@ The design was confirmed before implementation.
   counters, and unique card identities. Malformed data stops startup without
   rewriting the file. [History CSV validation](0008-history-csv-validation.md)
   defines the confirmed identity rules, counter consistency, and diagnostics.
-- [The TUI](../../internal/tui/model.go) records visible presentations and requests
-  saves at round completion and on Ctrl+C. The CLI owns the history store and reports
-  failures after the terminal UI exits.
+- [The terminal adapter](../../internal/tui/model.go) reports display eligibility
+  and translates keys into semantic practice actions. A private
+  [practice coordinator](../../internal/tui/practice.go) sequences session transitions,
+  records eligible presentations, and invokes the injected save function at round
+  completion and on Ctrl+C. Checkpoints are synchronous: a completed-round action
+  returns only after saving, before the summary is shown. The coordinator retains
+  the first save failure and blocks subsequent actions, shows, and saves.
+- The CLI still owns history opening, validation, and lock release, and reports
+  failures after the terminal UI exits. Deck discovery and selection retain their
+  existing owners. The coordinator starts with an existing session and performs no
+  file access itself.
+- [Coordinator tests](../../internal/tui/practice_test.go) exercise lifecycle decisions
+  without terminal messages. [TUI statistics tests](../../internal/tui/statistics_test.go)
+  retain visibility and key-mapping checks plus a real-history partial-card save.
 
 For example, after a card with two answers is shown and receives one correct and
 one incorrect answer, its row can be:

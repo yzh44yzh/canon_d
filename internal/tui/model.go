@@ -15,15 +15,13 @@ import (
 type model struct {
 	styles    uiStyles
 	picker    *deckPicker
-	session   *session.Session
+	practice  practice
 	input     textinput.Model
 	viewport  viewport.Model
 	width     int
 	height    int
 	selection int
 	sizeKnown bool
-	save      func(*session.Session) error
-	err       error
 }
 
 func Run(s *session.Session, save func(*session.Session) error) error {
@@ -31,10 +29,10 @@ func Run(s *session.Session, save func(*session.Session) error) error {
 }
 
 func runModel(m *model, save func(*session.Session) error) error {
-	m.save = save
+	m.practice.save = save
 	_, err := tea.NewProgram(m).Run()
 
-	return errors.Join(err, m.err)
+	return errors.Join(err, m.practice.err)
 }
 
 func newModel(session *session.Session, scheme ColorScheme) *model {
@@ -45,7 +43,7 @@ func newModel(session *session.Session, scheme ColorScheme) *model {
 	input.Placeholder = "Type the missing text"
 
 	m := &model{
-		styles: styles, session: session,
+		styles: styles, practice: practice{session: session},
 		input: input, viewport: viewport.New(),
 	}
 	m.resize(80, 24)
@@ -62,7 +60,10 @@ func (m *model) Init() tea.Cmd {
 }
 
 func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	defer m.recordShow()
+	defer func() {
+		visible := m.sizeKnown && m.width >= 20 && m.height >= 11 && m.picker == nil
+		m.practice.present(visible)
+	}()
 
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
@@ -72,7 +73,7 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 	case tea.KeyPressMsg:
 		if msg.String() == "ctrl+c" {
-			m.saveStatistics()
+			m.practice.quit()
 
 			return m, tea.Quit
 		}
@@ -96,24 +97,13 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		}
 
-		if m.session.Done() {
+		if m.practice.session.Done() {
 			return m.updateSummary(msg)
 		}
 
 		if msg.String() == "enter" {
-			if m.session.AwaitingContinue() || m.session.AnswerCount() == 0 {
-				before := m.session.CardIndex()
-				m.session.Continue()
-				if before != m.session.CardIndex() {
-					m.viewport.GotoTop()
-				}
-
-				m.input.Reset()
-			} else {
-				m.session.Submit(m.input.Value())
-			}
-
-			if m.session.Done() && !m.saveStatistics() {
+			m.applyTransition(m.practice.advance(m.input.Value()))
+			if m.practice.err != nil {
 				return m, tea.Quit
 			}
 
@@ -127,7 +117,7 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 
-	if !m.session.Done() && !m.session.AwaitingContinue() && m.session.AnswerCount() > 0 {
+	if m.practice.acceptingAnswer() {
 		var cmd tea.Cmd
 		m.input, cmd = m.input.Update(msg)
 
@@ -138,7 +128,7 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m *model) updateSummary(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
-	if m.session.MissedCount() == 0 {
+	if m.practice.session.MissedCount() == 0 {
 		if msg.String() == "enter" {
 			return m, tea.Quit
 		}
@@ -154,9 +144,7 @@ func (m *model) updateSummary(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		}
 
-		m.session.Repeat()
-		m.input.Reset()
-		m.viewport.GotoTop()
+		m.applyTransition(m.practice.repeat())
 		m.refreshCard()
 
 		return m, m.input.Focus()
@@ -178,7 +166,7 @@ func (m *model) resize(width, height int) {
 }
 
 func (m *model) refreshCard() {
-	if m.session == nil || m.session.Done() {
+	if m.practice.session == nil || m.practice.session.Done() {
 		return
 	}
 
@@ -191,7 +179,7 @@ func (m *model) refreshCard() {
 
 // renderCard wraps display text only; the session retains the original answers.
 func (m *model) renderCard(width int) (string, int) {
-	session := m.session
+	session := m.practice.session
 	var rows []string
 	answer, activeRow := 0, -1
 
@@ -278,7 +266,7 @@ func (m *model) cardPanel() string {
 	border := m.styles.panel.GetBorderStyle()
 	border.BottomLeft, border.BottomRight = "├", "┤"
 	header := ansi.Truncate(
-		displayText(m.session.Card().Header.Show()), max(1, m.width-2), "…",
+		displayText(m.practice.session.Card().Header.Show()), max(1, m.width-2), "…",
 	)
 	headerPanel := m.styles.panel.Border(border).Width(m.width).Render(header)
 	contentPanel := m.styles.panel.BorderTop(false).Width(m.width).Render(m.viewport.View())
@@ -288,6 +276,7 @@ func (m *model) cardPanel() string {
 
 func (m *model) View() tea.View {
 	var content string
+	session := m.practice.session
 
 	switch {
 	case !m.sizeKnown:
@@ -296,12 +285,12 @@ func (m *model) View() tea.View {
 		content = "Resize terminal to at least 20×11. Ctrl+C to quit."
 	case m.picker != nil:
 		content = m.pickerView()
-	case m.session.Done():
+	case session.Done():
 		content = fmt.Sprintf(
 			"Session complete\n\nCards: %d\nMissed cards: %d\n\n",
-			m.session.Total(), m.session.MissedCount(),
+			session.Total(), session.MissedCount(),
 		)
-		if m.session.MissedCount() > 0 {
+		if session.MissedCount() > 0 {
 			choices := []string{"Repeat missed", "Quit"}
 
 			for i, choice := range choices {
@@ -322,17 +311,17 @@ func (m *model) View() tea.View {
 		}
 	default:
 		prompt, status := "Enter to continue", m.styles.muted.Render("Reading card")
-		if m.session.AnswerCount() > 0 {
+		if session.AnswerCount() > 0 {
 			status = m.styles.muted.Render(fmt.Sprintf(
-				"Answer %d/%d", m.session.AnswerIndex()+1, m.session.AnswerCount(),
+				"Answer %d/%d", session.AnswerIndex()+1, session.AnswerCount(),
 			))
 			prompt = m.input.View()
-			if m.session.AwaitingContinue() {
+			if session.AwaitingContinue() {
 				prompt = "Enter to continue"
 				status = m.styles.incorrect.Render(
 					"Incorrect — expected answer revealed above",
 				)
-				if m.session.Correct() {
+				if session.Correct() {
 					status = m.styles.correct.Render("Correct")
 				}
 			}
@@ -340,8 +329,8 @@ func (m *model) View() tea.View {
 
 		progress := ansi.Truncate(
 			fmt.Sprintf("%s · Card %d/%d",
-				displayText(m.session.DeckName()),
-				m.session.CardIndex()+1, m.session.Total()),
+				displayText(session.DeckName()),
+				session.CardIndex()+1, session.Total()),
 			m.width, "…",
 		)
 		card := m.cardPanel()
@@ -368,20 +357,13 @@ func (m *model) View() tea.View {
 	return v
 }
 
-func (m *model) recordShow() {
-	if m.err != nil || !m.sizeKnown || m.width < 20 || m.height < 11 || m.picker != nil {
-		return
+// applyTransition keeps terminal effects separate from practice decisions.
+func (m *model) applyTransition(transition practiceTransition) {
+	switch transition {
+	case feedbackAcknowledged:
+		m.input.Reset()
+	case cardAdvanced, roundCompleted, retryStarted:
+		m.input.Reset()
+		m.viewport.GotoTop()
 	}
-
-	if m.session != nil {
-		m.session.RecordShow()
-	}
-}
-
-func (m *model) saveStatistics() bool {
-	if m.save != nil && m.session != nil && m.err == nil {
-		m.err = m.save(m.session)
-	}
-
-	return m.err == nil
 }
