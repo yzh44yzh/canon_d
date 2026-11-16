@@ -29,10 +29,10 @@ func (s *Session) cardIdentity() model.CardIdentity {
 	return model.CardIdentity{Deck: s.DeckName(), Header: s.Card().Header.Show()}
 }
 
-func (s *Session) recordAnswer() {
+func (s *Session) recordAnswer(correct bool) {
 	id := s.cardIdentity()
 	totals := s.statistics[id]
-	if s.correct {
+	if correct {
 		totals.CorrectAnswers++
 	} else {
 		totals.IncorrectAnswers++

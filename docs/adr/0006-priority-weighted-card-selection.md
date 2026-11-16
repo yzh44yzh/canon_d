@@ -8,8 +8,10 @@ correct answers, while retaining random selection.
 
 - A card is new when it has no history row, or when both its correct and incorrect
   answer totals are zero. A recorded show alone does not make a card old.
-- Reading cards retain new-card priority indefinitely because they never accumulate
-  correct or incorrect answer totals. Shows do not affect priority.
+- Completing a reading card with Enter adds one correct answer, so it loses
+  new-card priority on subsequent runs. Shows alone do not affect priority.
+  Existing shows-only reading history stays new until the next completion;
+  no historical completions are inferred or backfilled.
 - For old cards, use weight `(incorrect_answers + 1) / (correct_answers + 1)`.
   This keeps all weights positive and handles zero correct answers. The ratio is
   based on cumulative saved totals, including earlier retry rounds.

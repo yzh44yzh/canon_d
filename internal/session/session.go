@@ -131,16 +131,20 @@ func (s *Session) Submit(answer string) {
 	}
 
 	s.correct = strings.TrimSpace(answer) == strings.TrimSpace(s.answers[s.answerIndex])
-	s.recordAnswer()
+	s.recordAnswer(s.correct)
 	s.results = append(s.results, s.correct)
 	s.cardMissed = s.cardMissed || !s.correct
 	s.awaitingContinue = true
 }
 
-// Continue acknowledges feedback or advances a reading-only card.
+// Continue acknowledges feedback or records a successful reading and advances.
 func (s *Session) Continue() {
 	if s.Done() || (!s.awaitingContinue && len(s.answers) != 0) {
 		return
+	}
+
+	if len(s.answers) == 0 {
+		s.recordAnswer(true)
 	}
 
 	s.answerIndex++

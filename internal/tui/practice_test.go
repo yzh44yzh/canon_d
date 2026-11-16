@@ -133,7 +133,7 @@ func TestPracticeReportsAcknowledgementAndCardAdvancement(t *testing.T) {
 	}
 
 	for _, total := range p.session.Statistics() {
-		if total != (domain.CardStatistics{Shows: 1}) {
+		if total != (domain.CardStatistics{Shows: 1, CorrectAnswers: 1}) {
 			t.Fatalf("reading card statistics: %+v", total)
 		}
 	}

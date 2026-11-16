@@ -24,7 +24,12 @@ folder, allowing single-deck and multi-deck practice to share history.
 - Accumulate correct and incorrect submitted answers across runs and retry
   rounds. A card with two correct answers and one incorrect answer adds two to
   its correct total and one to its incorrect total. Acknowledging feedback
-  does not count as an answer.
+  does not count as an answer. Completing a reading card with Enter adds one to
+  its correct total. Viewing, scrolling, and quitting without completing the
+  reading add no correct answer. Repeated card occurrences each count once.
+- Keep the existing CSV format. Existing shows-only history remains unchanged:
+  it cannot distinguish completed readings from abandoned ones. A reading card
+  with zero answer totals retains new-card priority until its next completion.
 - Save after each completed round, including retries, and on Ctrl+C. Early exit
   includes submitted answers on an unfinished card. Forced termination can lose
   changes since the last save.

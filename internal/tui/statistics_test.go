@@ -67,6 +67,33 @@ func TestCtrlCSavesPartialCardDuringFeedback(t *testing.T) {
 	checkSavedRow(t, path, []string{"test", "Card", "1", "1", "0"})
 }
 
+func TestReadingCompletionSavesSuccess(t *testing.T) {
+	for _, complete := range []bool{false, true} {
+		name := "quit before completion"
+		if complete {
+			name = "complete then quit"
+		}
+
+		t.Run(name, func(t *testing.T) {
+			m := testModel(t, "# Read\nReading")
+			path := connectHistory(t, m)
+			correct := "0"
+			if complete {
+				press(m, tea.KeyEnter)
+				correct = "1"
+				checkSavedRow(t, path, []string{"test", "Read", "1", correct, "0"})
+			}
+
+			m.Update(tea.KeyPressMsg{Code: 'c', Mod: tea.ModCtrl})
+			if m.practice.err != nil {
+				t.Fatal(m.practice.err)
+			}
+
+			checkSavedRow(t, path, []string{"test", "Read", "1", correct, "0"})
+		})
+	}
+}
+
 func TestShowWaitsForVisibleCardAndIgnoresRedraws(t *testing.T) {
 	deck := parser.MakeDeck("read.md", "# Read\nReading")
 	s, err := session.NewSession(deck, 1, nil)

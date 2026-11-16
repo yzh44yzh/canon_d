@@ -36,7 +36,9 @@ A round tracks its selected cards, current card and answer positions, per-answer
 3. `Continue` acknowledges feedback and advances to the next answer. Previous results remain available until the card ends.
 4. After the final answer is acknowledged, the session records the card as missed if any answer was incorrect, advances to the next card, and resets answer state.
 
-`Submit` has no effect during feedback, on reading cards, or after the round is complete. `Continue` cannot skip an unanswered answer. A reading card has no hidden parts and completes with one `Continue`, without becoming missed. Operations after completion are harmless; `Card` returns an empty card.
+`Submit` has no effect during feedback, on reading cards, or after the round is complete. `Continue` cannot skip an unanswered answer. A reading card has no hidden parts and completes with one `Continue`, recording
+one correct answer without becoming missed. Merely showing a reading card or
+quitting while it is open records no correct answer. Operations after completion are harmless; `Card` returns an empty card.
 
 The TUI maps Enter to the practice coordinator's advance action. The coordinator
 chooses submission while answering, or `Continue` during feedback or on a reading
@@ -58,7 +60,8 @@ The summary initially selects `Repeat missed` when mistakes exist; the user can 
 ## Lifetime and boundaries
 
 Round state exists in memory and is not resumed on a later run. Sessions accumulate
-per-card shows and submitted answer totals across their initial and retry rounds.
+per-card shows and answer totals across their initial and retry rounds. Answer
+totals include one correct answer per completed reading.
 `RecordShow` counts a presentation once; starting a new card or retry resets its
 presentation flag. The TUI reports display eligibility to the practice coordinator,
 which requests show recording only while practice has no save failure.

@@ -25,16 +25,17 @@ The source deck's filename together with the card's full hierarchical header.
 Changing either identifies a different card for learning history.
 
 **Answer totals**:
-The cumulative numbers of correct and incorrect submitted answers for a card
-identity, across sessions and retry rounds.
+The cumulative numbers of correct and incorrect answers for a card identity,
+across sessions and retry rounds. Each acknowledged reading also counts as one
+correct answer.
 
 **Card statistics**:
 The cumulative number of shows and answer totals for a card identity, shared across
 sessions and retry rounds.
 
 **New card**:
-A card identity with no recorded correct or incorrect answers, whether or not it
-has saved statistics or recorded shows.
+A card identity with no recorded correct or incorrect answers or acknowledged
+readings, whether or not it has saved statistics or recorded shows.
 
 **Card priority**:
 A card's relative chance of being selected and appearing earlier in an initial

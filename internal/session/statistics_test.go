@@ -63,9 +63,38 @@ func TestDuplicateReadingCardsShareStatistics(t *testing.T) {
 	}
 
 	want := map[model.CardIdentity]model.CardStatistics{
-		{Deck: "read.md", Header: "Same"}: {Shows: 2},
+		{Deck: "read.md", Header: "Same"}: {Shows: 2, CorrectAnswers: 2},
 	}
 	if diff := cmp.Diff(want, s.Statistics()); diff != "" {
 		t.Fatalf("duplicate reading totals: %s", diff)
+	}
+}
+
+func TestReadingCompletionRemovesNewCardPriority(t *testing.T) {
+	deck := parser.MakeDeck("test.md", "# Read\nReading")
+	s, err := NewSession(deck, 1, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	cards := []practiceCard{selectionCard("Read"), selectionCard("Unseen")}
+	s.RecordShow()
+	s.Submit("ignored")
+	if diff := cmp.Diff([]float64{1, 1}, initialWeights(cards, s.Statistics())); diff != "" {
+		t.Fatalf("viewing must retain new-card priority: %s", diff)
+	}
+
+	s.Continue()
+	s.Continue()
+	s.Repeat()
+	want := map[model.CardIdentity]model.CardStatistics{
+		{Deck: "test.md", Header: "Read"}: {Shows: 1, CorrectAnswers: 1},
+	}
+	if diff := cmp.Diff(want, s.Statistics()); diff != "" {
+		t.Fatalf("completion must count exactly once: %s", diff)
+	}
+
+	if diff := cmp.Diff([]float64{0.5, 1}, initialWeights(cards, s.Statistics())); diff != "" {
+		t.Fatalf("completed reading must use successful-card priority: %s", diff)
 	}
 }
