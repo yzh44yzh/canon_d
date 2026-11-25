@@ -15,6 +15,7 @@ It is the core storage engine in ClickHouse, providing features such as
 - `sparse primary indexes`,
 - and support for `background data merges`.
 
+## MergeTree Engines
 7 engines, 3 of them allow update:
 - `ReplacingMergeTree`
 - `CollapsingMergeTree`
@@ -67,7 +68,7 @@ where ...
 INSERT INTO my_table(field_1, field_2)
 SELECT 
   `number`,
-  `concat('prefix_', toString(rand())`
+  `concat('prefix_', toString(rand()))`
 FROM `system.numbers`
 LIMIT 1000000
 
