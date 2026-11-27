@@ -52,3 +52,17 @@ Markdown headings delimit cards and establish their hierarchy. Inline backticks 
 ## Commit & Pull Request Guidelines
 
 History uses short, imperative subjects such as `shuffle Deck and limit cards` and `move modules to internal package`, without a mandatory prefix. Keep commits focused. Pull requests should explain the behavior change, link a relevant issue when available, and list validation commands and results. Include a sample terminal session for changes to prompts or answer feedback.
+
+## Agent skills
+
+### Issue tracker
+
+Issues and specs are tracked in GitHub Issues for `yzh44yzh/canon_d`. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+The five canonical triage roles use their default label strings. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: `GLOSSARY.md` at the repo root and ADRs in `docs/adr/`. See `docs/agents/domain.md`.
